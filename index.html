@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E9ECF0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vermogen">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314181F'/%3E%3Ctext x='50' y='63' font-family='Georgia,serif' font-size='46' fill='%230E6E58' text-anchor='middle'%3E%E2%82%AC%3C/text%3E%3C/svg%3E">
+<title>Vermogen — Naar nul en verder</title>
+<style>
+  :root{
+    --ink:#14181F;
+    --muted:#6C7686;
+    --line:#D7DCE4;
+    --paper:#E9ECF0;
+    --surface:#FFFFFF;
+    --debt:#A6382F;
+    --debt-soft:#F6E7E5;
+    --asset:#0E6E58;
+    --asset-soft:#E1F0EB;
+    --ochre:#C8912A;
+    --radius:14px;
+
+    --display:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --body:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --data:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,'Liberation Mono',monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--body);
+    background:var(--paper);
+    color:var(--ink);
+    font-size:16px;
+    line-height:1.4;
+    padding:16px 14px calc(96px + env(safe-area-inset-bottom));
+    max-width:640px;
+    margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  .eyebrow{
+    font-family:var(--data);
+    font-size:0.68rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:500;
+  }
+  .num{font-family:var(--data);font-variant-numeric:tabular-nums;}
+
+  /* ---- Hero: net worth + balance track ---- */
+  .hero{
+    background:var(--surface);
+    border-radius:18px;
+    padding:20px 18px 18px;
+    margin-bottom:12px;
+    border:1px solid var(--line);
+  }
+  .hero-net{
+    font-family:var(--data);
+    font-weight:600;
+    font-size:2.3rem;
+    letter-spacing:-0.02em;
+    line-height:1.05;
+    margin:6px 0 2px;
+    font-variant-numeric:tabular-nums;
+  }
+  .hero-net.neg{color:var(--debt);}
+  .hero-net.pos{color:var(--asset);}
+  .hero-sub{font-size:0.82rem;color:var(--muted);margin-bottom:18px;}
+
+  .track-wrap{margin-top:4px;}
+  .track{
+    position:relative;
+    height:34px;
+    border-radius:9px;
+    overflow:hidden;
+    background:var(--paper);
+    display:flex;
+  }
+  .track-assets{background:var(--asset);height:100%;transition:width .45s cubic-bezier(.4,0,.2,1);}
+  .track-debts{background:var(--debt);height:100%;transition:width .45s cubic-bezier(.4,0,.2,1);}
+  .track-tick{
+    position:absolute;top:-3px;bottom:-3px;left:50%;
+    width:2px;background:var(--ink);
+    transform:translateX(-1px);
+  }
+  .track-tick::after{
+    content:'';position:absolute;top:-4px;left:-3px;
+    border-left:4px solid transparent;border-right:4px solid transparent;
+    border-top:5px solid var(--ink);
+  }
+  .track-legend{
+    display:flex;justify-content:space-between;
+    margin-top:8px;font-size:0.72rem;
+  }
+  .track-legend .lg{display:flex;flex-direction:column;gap:1px;}
+  .track-legend .lg.right{text-align:right;}
+  .track-legend .k{color:var(--muted);font-size:0.68rem;letter-spacing:0.04em;text-transform:uppercase;}
+  .track-legend .v{font-family:var(--data);font-weight:600;font-size:0.9rem;}
+  .track-legend .v.d{color:var(--debt);}
+  .track-legend .v.a{color:var(--asset);}
+  .breakeven-note{
+    text-align:center;font-size:0.68rem;color:var(--muted);
+    margin-top:10px;font-family:var(--data);letter-spacing:0.04em;
+  }
+
+  .spark{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+  .spark svg{width:100%;height:44px;display:block;}
+  .spark-label{display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted);margin-top:4px;font-family:var(--data);}
+
+  /* ---- Section cards ---- */
+  .section{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .section-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;min-height:52px;cursor:pointer;user-select:none;
+    touch-action:manipulation;
+  }
+  .section-head .title{
+    font-family:var(--display);font-weight:700;font-size:0.98rem;letter-spacing:-0.01em;
+  }
+  .section-head .right{display:flex;align-items:center;gap:10px;}
+  .section-total{font-family:var(--data);font-weight:600;font-size:0.98rem;}
+  .section-total.d{color:var(--debt);}
+  .section-total.a{color:var(--asset);}
+  .caret{color:var(--muted);font-size:0.7rem;transition:transform .2s ease;}
+  .caret.open{transform:rotate(90deg);}
+  .section-body{display:none;}
+  .section-body.open{display:block;}
+
+  .line-row{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 16px;border-top:1px solid var(--line);min-height:56px;
+  }
+  .line-label{flex:1;min-width:0;}
+  .line-label .nm{font-size:0.9rem;display:block;}
+  .line-label .grp{
+    font-family:var(--data);font-size:0.64rem;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .euro{color:var(--muted);font-family:var(--data);font-size:0.9rem;}
+  .amt-in{
+    width:112px;font-family:var(--data);font-size:16px;font-weight:500;
+    padding:9px 10px;border:1px solid var(--line);border-radius:10px;
+    text-align:right;background:#FBFCFD;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .amt-in:focus{outline:2px solid var(--ink);outline-offset:1px;border-color:transparent;}
+  .amt-in:disabled{background:#F2F4F7;color:#A9B0BB;}
+
+  /* ---- Goal / debt meters ---- */
+  .meters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .meter{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);padding:12px 13px;
+  }
+  .meter .k{
+    font-family:var(--data);font-size:0.62rem;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;
+    line-height:1.3;min-height:2.2em;
+  }
+  .meter .v{font-family:var(--data);font-weight:600;font-size:1.02rem;letter-spacing:-0.01em;}
+  .meter .sub{font-family:var(--data);font-size:0.68rem;color:var(--muted);margin-top:2px;}
+  .meter-bar{height:5px;border-radius:3px;background:var(--paper);margin-top:9px;overflow:hidden;}
+  .meter-bar i{display:block;height:100%;width:0;transition:width .4s ease;}
+  .meter-bar i.d{background:var(--debt);}
+  .meter-bar i.a{background:var(--asset);}
+  @media(max-width:380px){.meters{grid-template-columns:1fr;}}
+
+  /* ---- Months ---- */
+  .phase{
+    font-family:var(--data);font-size:0.64rem;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--muted);margin:20px 4px 8px;
+  }
+  .month{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius);margin-bottom:9px;overflow:hidden;
+  }
+  .month-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:13px 15px;min-height:60px;cursor:pointer;touch-action:manipulation;
+  }
+  .month-head.done{background:var(--asset-soft);}
+  .month-name{font-family:var(--display);font-weight:500;font-size:0.95rem;}
+  .month-sub{font-family:var(--data);font-size:0.72rem;color:var(--muted);margin-top:3px;}
+  .milestone{
+    display:inline-block;font-family:var(--data);font-size:0.66rem;font-weight:600;
+    color:var(--ochre);background:#FBF1E1;padding:2px 8px;border-radius:6px;margin-top:5px;
+  }
+  .pill{
+    font-family:var(--data);font-size:0.68rem;font-weight:600;
+    padding:4px 9px;border-radius:20px;background:var(--paper);color:var(--muted);
+    white-space:nowrap;
+  }
+  .pill.done{background:var(--asset);color:#fff;}
+  .month-progress{height:3px;background:var(--paper);}
+  .month-progress i{display:block;height:100%;background:var(--asset);width:0;transition:width .35s ease;}
+  .month-body{display:none;}
+  .month-body.open{display:block;}
+  .item{
+    display:flex;align-items:center;gap:12px;
+    padding:10px 15px;border-top:1px solid var(--line);min-height:60px;
+  }
+  .cbx{
+    appearance:none;-webkit-appearance:none;
+    width:26px;height:26px;flex-shrink:0;
+    border:2px solid var(--line);border-radius:8px;background:#fff;
+    display:grid;place-content:center;cursor:pointer;touch-action:manipulation;
+  }
+  .cbx:checked{background:var(--asset);border-color:var(--asset);}
+  .cbx:checked::after{content:'';width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px);}
+  .cbx:focus-visible{outline:2px solid var(--ink);outline-offset:2px;}
+  .item-main{flex:1;min-width:0;}
+  .item-name{font-size:0.9rem;}
+  .item.checked .item-name{color:var(--muted);}
+  .item-plan{font-family:var(--data);font-size:0.66rem;color:var(--muted);display:block;margin-top:1px;}
+  .delta{font-family:var(--data);font-size:0.64rem;font-weight:600;padding:1px 5px;border-radius:5px;margin-left:6px;}
+  .delta.more{background:var(--debt-soft);color:var(--debt);}
+  .delta.less{background:var(--asset-soft);color:var(--asset);}
+  .del{
+    background:none;border:none;color:#C3C9D2;font-size:1.05rem;
+    width:36px;height:36px;border-radius:8px;cursor:pointer;flex-shrink:0;
+  }
+  .add-row{display:flex;gap:7px;padding:12px 15px;border-top:1px solid var(--line);background:#FAFBFC;flex-wrap:wrap;}
+  .add-row input[type=text]{
+    flex:1;min-width:120px;font-size:16px;padding:10px 11px;
+    border:1px solid var(--line);border-radius:10px;font-family:var(--body);
+  }
+  .add-row input[type=number]{
+    width:96px;font-size:16px;padding:10px 11px;text-align:right;
+    border:1px solid var(--line);border-radius:10px;font-family:var(--data);
+  }
+  .add-btn{
+    background:var(--ink);color:#fff;border:none;border-radius:10px;
+    font-size:0.85rem;font-weight:600;padding:10px 15px;min-height:44px;cursor:pointer;
+  }
+
+  /* ---- Sticky save bar (bottom = thumb reach) ---- */
+  .savebar{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--paper) 62%,rgba(233,236,240,0));
+    display:flex;align-items:center;gap:11px;
+    max-width:640px;margin:0 auto;
+  }
+  .save-btn{
+    flex:1;background:var(--ink);color:#fff;border:none;border-radius:13px;
+    font-family:var(--display);font-size:0.95rem;font-weight:700;
+    min-height:52px;cursor:pointer;touch-action:manipulation;
+    box-shadow:0 4px 14px rgba(20,24,31,0.2);
+  }
+  .save-btn:active{transform:translateY(1px);}
+  .save-btn.ok{background:var(--asset);}
+  .save-btn.err{background:var(--debt);}
+  .save-note{
+    font-family:var(--data);font-size:0.66rem;color:var(--muted);
+    text-align:right;max-width:110px;line-height:1.3;
+  }
+
+  .reset{
+    display:block;margin:22px auto 0;background:none;border:1px solid var(--line);
+    color:var(--muted);font-size:0.76rem;padding:10px 18px;border-radius:10px;
+    min-height:44px;cursor:pointer;font-family:var(--body);
+  }
+  .footnote{text-align:center;font-size:0.72rem;color:var(--muted);margin-top:14px;line-height:1.5;}
+  #warn{
+    background:#FDF6E3;border:1px solid #EBD9A8;color:#7A5F16;
+    font-size:0.76rem;padding:10px 13px;border-radius:11px;margin-bottom:12px;
+  }
+  .loading{text-align:center;color:var(--muted);padding:36px 0;font-size:0.86rem;}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="eyebrow" style="margin-bottom:2px;">Balans · <span id="todayLbl"></span></div>
+
+<div class="hero">
+  <div class="eyebrow">Netto vermogen</div>
+  <div class="hero-net num neg" id="netVal">—</div>
+  <div class="hero-sub" id="netSub">Bezittingen min schulden</div>
+
+  <div class="track-wrap">
+    <div class="track">
+      <div class="track-debts" id="trkDebt" style="width:70%"></div>
+      <div class="track-assets" id="trkAsset" style="width:30%"></div>
+      <div class="track-tick" title="Break-even"></div>
+    </div>
+    <div class="track-legend">
+      <div class="lg"><span class="k">Schulden</span><span class="v d num" id="lgDebt">—</span></div>
+      <div class="lg right"><span class="k">Bezittingen</span><span class="v a num" id="lgAsset">—</span></div>
+    </div>
+    <div class="breakeven-note" id="beNote"></div>
+  </div>
+
+  <div class="spark" id="sparkWrap" style="display:none;">
+    <div class="eyebrow">Verloop netto vermogen</div>
+    <svg id="sparkSvg" viewBox="0 0 300 44" preserveAspectRatio="none"></svg>
+    <div class="spark-label"><span id="sparkFrom"></span><span id="sparkTo"></span></div>
+  </div>
+</div>
+
+<div class="meters" id="meters"></div>
+
+<div class="section" id="secAssets">
+  <div class="section-head" data-toggle="assets">
+    <span class="title">Bezittingen</span>
+    <span class="right"><span class="section-total a num" id="totAssets">—</span><span class="caret">▶</span></span>
+  </div>
+  <div class="section-body" id="bodyAssets"></div>
+</div>
+
+<div class="section" id="secDebts">
+  <div class="section-head" data-toggle="debts">
+    <span class="title">Schulden</span>
+    <span class="right"><span class="section-total d num" id="totDebts">—</span><span class="caret">▶</span></span>
+  </div>
+  <div class="section-body" id="bodyDebts"></div>
+</div>
+
+<div class="section" id="secTotals" style="margin-top:16px;">
+  <div style="padding:14px 16px 4px;"><span class="eyebrow">Totaaloverzicht</span></div>
+  <div id="bodyTotals"></div>
+</div>
+
+<div class="phase" style="margin-top:26px;">Maandelijkse opvolging</div>
+<div id="app"><div class="loading">Bezig met laden…</div></div>
+
+<button class="reset" id="resetBtn">Alles resetten</button>
+<div class="footnote">Tik op een maand om te openen. Vink af wat betaald is en pas het bedrag aan als het afwijkt.</div>
+
+<div class="savebar">
+  <button class="save-btn" id="saveBtn">Voortgang opslaan</button>
+  <span class="save-note" id="saveNote"></span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Plan definition ---------------- */
+  const NL=["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
+  function range(y,m,n){const a=[];for(let i=0;i<n;i++){const d=new Date(y,m+i,1);a.push({y:d.getFullYear(),m:d.getMonth()});}return a;}
+
+  const ITEMS_A=[["Buy Way",361],["Stellantis auto",322.77],["Auto & Business kosten",460],["Sparen",250],["S&P 500 / Investeringen",150]];
+
+  const plan=[];
+  function push(months,items,phase,milestone){
+    months.forEach(function(o){
+      plan.push({
+        key:o.y+"-"+String(o.m+1).padStart(2,"0"),
+        label:NL[o.m]+" "+o.y,
+        phase:phase,
+        milestone:milestone||null,
+        items:items.map(function(p){return {name:p[0],amt:p[1]};})
+      });
+    });
+  }
+  // Augustus 2026 — historische maand, van vóór het masterplan. Structuur ongewijzigd
+  // gelaten zodat de al opgeslagen/ingebakken augustus-gegevens blijvend kloppen.
+  push(range(2026,7,1),ITEMS_A,"Fase 1 · Buy Way + Stellantis");
+
+  // Masterplan (Sep 2026 – Jul 2027) — 3 fases, uit het nieuwe maandoverzicht.
+  const FIXED=[["Autokosten",632.77],["Leefgeld",600]];
+  const FIXED_DEC=[["Autokosten",632.77],["Leefgeld (incl. €260 kerst/fun bonus)",860]];
+  const FASE1=[["Buy Way aflossing",569.39],["Revolut Spaarbuffer",100],["KBC Beleggen",50],["Revolut Beleggen",47.84]];
+  const FASE3=[["Revolut Spaarbuffer",143.45],["KBC Beleggen",50],["Revolut Beleggen",573.78]];
+  const F1="Fase 1 · Buy Way aflossen", F2="Fase 2 · 80% sparen / 20% beurs", F3="Fase 3 · 80% beurs / 20% sparen";
+
+  push(range(2026,8,1), FASE1.concat(FIXED), F1, "Buy Way helft afgelost");
+  push(range(2026,9,1), FASE1.concat(FIXED), F1, "Buy Way 100% schuldenvrij!");
+  push(range(2026,10,1),
+    [["Revolut Spaarbuffer",2373.78],["KBC Beleggen",50],["Revolut Beleggen",143.45]].concat(FIXED),
+    F2, "Spaarboost (+ €1.800 belastingteruggave)");
+  push(range(2026,11,1),
+    [["Revolut Spaarbuffer",1282.44],["KBC Beleggen",50],["Revolut Beleggen",1174.79]].concat(FIXED_DEC),
+    F2, "€5k spaardoel behaald (+ €1.300 bonus)");
+  push(range(2027,0,1), FASE3.concat(FIXED), F3, "Start 80% beleggen / 20% sparen");
+  push(range(2027,1,1), FASE3.concat(FIXED), F3, "Maximale vermogensopbouw");
+  push(range(2027,2,1), FASE3.concat(FIXED), F3, "Vlak voor de €10k-grens");
+  push(range(2027,3,1), FASE3.concat(FIXED), F3, "€10.000 vermogensgrens doorbroken!");
+  push(range(2027,4,1), FASE3.concat(FIXED), F3, "Beurs > Spaarbuffer");
+  push(range(2027,5,1), FASE3.concat(FIXED), F3, "Gestage kapitaalopbouw");
+  push(range(2027,6,1), FASE3.concat(FIXED), F3, "Eindrapport: > €13.000 vermogen!");
+
+  /* ---------------- Defaults ---------------- */
+  const DEFAULT_ASSETS=[
+    {id:"spaarbuffer",group:"Spaarbuffer",        label:"Revolut Spaarbuffer",       amt:744,    kind:"spaar"},
+    {id:"revbiz",     group:"Spaarbuffer",        label:"Revolut Business",          amt:0,      kind:"spaar"},
+    {id:"kbclopend",  group:"Cash",               label:"KBC lopend",                amt:335,    kind:"cash"},
+    {id:"kbcbeleg",   group:"Beleggingen",        label:"KBC Beleggen",              amt:183,    kind:"beleg"},
+    {id:"teck",       group:"Beleggingen",        label:"Teck Resources",            amt:379.72, kind:"beleg"},
+    {id:"vuaa",       group:"Beleggingen",        label:"Vanguard S&P 500 (VUAA)",   amt:374.56, kind:"beleg"},
+    {id:"iwda",       group:"Beleggingen",        label:"iShares Core MSCI World (IWDA)",amt:100.43,kind:"beleg"},
+    {id:"peugeot",    group:"Overige bezittingen",label:"Peugeot 208 (2022, 96k km)",amt:9500,   kind:"overig"},
+    {id:"iphone",     group:"Overige bezittingen",label:"iPhone 17 Pro Max",         amt:1000,   kind:"overig"},
+    {id:"vordering",  group:"Overige bezittingen",label:"Vorderingen (lening)",      amt:367,    kind:"overig"},
+    {id:"macmini",    group:"Overige bezittingen",label:"Mac Mini M1",               amt:300,    kind:"overig"}
+  ];
+  const DEFAULT_DEBTS=[
+    {id:"buyway",    label:"Buy Way",    amt:1138.77, start:2500},
+    {id:"stellantis",label:"Stellantis", amt:8560.23, start:8883.14,
+     loanStart:"2024-07-29", loanEnd:"2029-07-28", monthly:322.77}
+  ];
+  const GOAL_SPAAR=6020.37, GOAL_BELEG=7013.39;
+
+  const AUG_SEED={
+    checks:[true,true,true,true,true],
+    actuals:[311,322.77,460,250,136],
+    extra:[
+      {name:"Banden wisselen +Onderhoud", amt:420, checked:true}
+    ]
+  };
+
+  /* ---------------- State ---------------- */
+  let state={months:{},assets:null,debts:null,history:[]};
+  let openMonth=null, openSection={assets:false,debts:false};
+  let storageBroken=false;
+  const KEY="finplan-v3";
+
+  const fmt=function(n){
+    const v=Number(n||0);
+    return (v<0?"− ":"")+"€ "+Math.abs(v).toLocaleString("nl-BE",{minimumFractionDigits:2,maximumFractionDigits:2});
+  };
+  const fmtShort=function(n){
+    const v=Number(n||0);
+    return (v<0?"− ":"")+"€ "+Math.abs(v).toLocaleString("nl-BE",{maximumFractionDigits:0});
+  };
+
+  // Full months elapsed from an ISO start date up to a reference date — a month only
+  // counts once its due-day has passed, so this stays accurate on every open, no manual updates needed.
+  function monthsElapsed(startISO,refDate){
+    const start=new Date(startISO+"T00:00:00");
+    let n=(refDate.getFullYear()-start.getFullYear())*12+(refDate.getMonth()-start.getMonth());
+    if(refDate.getDate()<start.getDate())n--;
+    return Math.max(0,n);
+  }
+
+  async function load(){
+    if(!window.storage||typeof window.storage.get!=="function"){storageBroken=true;return null;}
+    try{
+      const r=await window.storage.get(KEY,false);
+      if(r&&r.value){
+        const p=JSON.parse(r.value);
+        if(p&&typeof p==="object")return p;
+      }
+    }catch(e){/* nothing stored yet — defaults stay */}
+    return null;
+  }
+
+  const SEED_VERSION=11;
+
+  function hydrate(){
+    if(!Array.isArray(state.assets)||!state.assets.length)state.assets=JSON.parse(JSON.stringify(DEFAULT_ASSETS));
+    if(!Array.isArray(state.debts)||!state.debts.length)state.debts=JSON.parse(JSON.stringify(DEFAULT_DEBTS));
+    if(!Array.isArray(state.history))state.history=[];
+    if(!state.months||typeof state.months!=="object")state.months={};
+    if(!state.months["2026-08"])state.months["2026-08"]=JSON.parse(JSON.stringify(AUG_SEED));
+
+    // Latest figures as reported — applied once, also over older saved data
+    if(state.seedVersion!==SEED_VERSION){
+      state.assets=JSON.parse(JSON.stringify(DEFAULT_ASSETS));
+      state.debts=JSON.parse(JSON.stringify(DEFAULT_DEBTS));
+      const aug=state.months["2026-08"];
+      if(aug&&Array.isArray(aug.checks)&&Array.isArray(aug.actuals)){
+        aug.checks[0]=true;   aug.actuals[0]=311;    // Buy Way
+        aug.checks[2]=true;   aug.actuals[2]=460;    // Auto & Business kosten — volledig betaald
+        if(!Array.isArray(aug.extra))aug.extra=[];
+        if(!aug.extra.some(function(x){return x.name==="Banden wisselen +Onderhoud";})){
+          aug.extra.push({name:"Banden wisselen +Onderhoud", amt:420, checked:true});
+        }
+      }
+      state.seedVersion=SEED_VERSION;
+    }
+  }
+
+  function warnOnce(){
+    if(document.getElementById("warn"))return;
+    const d=document.createElement("div");
+    d.id="warn";
+    d.textContent="Opslaan lukt hier niet. Je wijzigingen blijven bewaard zolang dit scherm open staat.";
+    document.body.insertBefore(d,document.querySelector(".hero"));
+  }
+
+  function btn(mode,note){
+    const b=document.getElementById("saveBtn"),n=document.getElementById("saveNote");
+    b.classList.remove("ok","err");b.disabled=false;
+    if(mode==="saving"){b.textContent="Opslaan…";b.disabled=true;}
+    else if(mode==="ok"){b.textContent="Opgeslagen";b.classList.add("ok");}
+    else if(mode==="err"){b.textContent="Opnieuw opslaan";b.classList.add("err");}
+    else b.textContent="Voortgang opslaan";
+    if(note!==undefined)n.textContent=note;
+  }
+
+  async function save(manual){
+    if(storageBroken&&!manual)return;
+    if(manual)btn("saving");
+    try{
+      await window.storage.set(KEY,JSON.stringify(state),false);
+      storageBroken=false;
+      const w=document.getElementById("warn");if(w)w.remove();
+      if(manual){
+        const d=new Date();
+        const t=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+        btn("ok","Bewaard om "+t);
+        setTimeout(function(){btn("idle");},1900);
+      }
+    }catch(e){
+      storageBroken=true;
+      if(manual)btn("err","Opslaan mislukt");else warnOnce();
+    }
+  }
+
+  function monthState(m){
+    const n=m.items.length;
+    let s=state.months[m.key];
+    if(!s){s={checks:new Array(n).fill(false),actuals:m.items.map(function(i){return i.amt;}),extra:[]};state.months[m.key]=s;}
+    if(!Array.isArray(s.checks))s.checks=new Array(n).fill(false);
+    while(s.checks.length<n)s.checks.push(false);
+    if(!Array.isArray(s.actuals)||s.actuals.length!==n)
+      s.actuals=m.items.map(function(i,idx){return (s.actuals&&s.actuals[idx]!=null)?s.actuals[idx]:i.amt;});
+    if(!Array.isArray(s.extra))s.extra=[];
+    return s;
+  }
+
+  /* ---------------- Totals ---------------- */
+  function totals(){
+    const a=state.assets.reduce(function(s,x){return s+Number(x.amt||0);},0);
+    const d=state.debts.reduce(function(s,x){return s+Number(x.amt||0);},0);
+    const spaar=state.assets.filter(function(x){return x.kind==="spaar";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
+    const beleg=state.assets.filter(function(x){return x.kind==="beleg";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
+    const cash=state.assets.filter(function(x){return x.kind==="cash";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
+    return {assets:a,debts:d,net:a-d,spaar:spaar,beleg:beleg,cash:cash};
+  }
+
+  /* ---------------- Render: hero ---------------- */
+  function renderHero(){
+    const t=totals();
+    const el=document.getElementById("netVal");
+    el.textContent=fmt(t.net);
+    el.className="hero-net num "+(t.net<0?"neg":"pos");
+    document.getElementById("netSub").textContent =
+      t.net<0 ? "Nog "+fmt(Math.abs(t.net))+" te overbruggen tot break-even"
+              : "Je staat "+fmt(t.net)+" boven break-even";
+
+    const sum=t.assets+t.debts;
+    const dp=sum?(t.debts/sum*100):50, ap=sum?(t.assets/sum*100):50;
+    document.getElementById("trkDebt").style.width=dp+"%";
+    document.getElementById("trkAsset").style.width=ap+"%";
+    document.getElementById("lgDebt").textContent=fmt(t.debts);
+    document.getElementById("lgAsset").textContent=fmt(t.assets);
+    document.getElementById("beNote").textContent =
+      "Break-even bij het streepje — bezittingen dekken dan de schuld";
+    document.getElementById("totAssets").textContent=fmt(t.assets);
+    document.getElementById("totDebts").textContent=fmt(t.debts);
+
+    renderSpark();
+  }
+
+  function renderSpark(){
+    const h=state.history||[];
+    const wrap=document.getElementById("sparkWrap");
+    if(h.length<2){wrap.style.display="none";return;}
+    wrap.style.display="block";
+    const vals=h.map(function(p){return p.net;});
+    const min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
+    const span=(max-min)||1;
+    const W=300,H=44,pad=4;
+    const pts=vals.map(function(v,i){
+      const x=h.length===1?0:(i/(h.length-1))*W;
+      const y=H-pad-((v-min)/span)*(H-pad*2);
+      return x.toFixed(1)+","+y.toFixed(1);
+    });
+    const zeroY = (0>=min&&0<=max) ? (H-pad-((0-min)/span)*(H-pad*2)) : null;
+    const last=vals[vals.length-1];
+    const col=last<0?"#A6382F":"#0E6E58";
+    let svg="";
+    if(zeroY!==null)svg+='<line x1="0" y1="'+zeroY.toFixed(1)+'" x2="'+W+'" y2="'+zeroY.toFixed(1)+'" stroke="#D7DCE4" stroke-width="1" stroke-dasharray="3 3"/>';
+    svg+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+    const lastPt=pts[pts.length-1].split(",");
+    svg+='<circle cx="'+lastPt[0]+'" cy="'+lastPt[1]+'" r="2.6" fill="'+col+'"/>';
+    document.getElementById("sparkSvg").innerHTML=svg;
+    document.getElementById("sparkFrom").textContent=h[0].date+"  "+fmtShort(h[0].net);
+    document.getElementById("sparkTo").textContent=fmtShort(last);
+  }
+
+  /* ---------------- Render: meters ---------------- */
+  function renderMeters(){
+    const t=totals();
+    const cards=[];
+    const today=new Date();
+    state.debts.forEach(function(d){
+      let paid,pct,sub,extra="";
+      if(d.loanStart&&d.loanEnd&&d.monthly){
+        const totalM=monthsElapsed(d.loanStart,new Date(d.loanEnd+"T00:00:00"))+1;
+        const doneM=Math.min(totalM,monthsElapsed(d.loanStart,today)+1);
+        const totalPrice=totalM*d.monthly;
+        paid=doneM*d.monthly;
+        pct=totalPrice?Math.min(100,paid/totalPrice*100):0;
+        sub=fmtShort(paid)+" afbetaald van "+fmtShort(totalPrice);
+        extra='<div class="sub" style="margin-top:3px;">'+doneM+'/'+totalM+' maandtermijnen</div>';
+      }else{
+        const start=Number(d.start||d.amt||0);
+        paid=Math.max(0,start-Number(d.amt||0));
+        pct=start?Math.min(100,paid/start*100):0;
+        sub=fmtShort(paid)+" afbetaald";
+      }
+      cards.push({k:d.label+" restschuld",v:fmt(d.amt),sub:sub,pct:pct,cls:"d",extra:extra});
+    });
+    cards.push({k:"Spaarbuffer",v:fmt(t.spaar),sub:"doel "+fmtShort(GOAL_SPAAR),pct:Math.min(100,t.spaar/GOAL_SPAAR*100),cls:"a"});
+    cards.push({k:"Beleggingen",v:fmt(t.beleg),sub:"doel "+fmtShort(GOAL_BELEG),pct:Math.min(100,t.beleg/GOAL_BELEG*100),cls:"a"});
+
+    document.getElementById("meters").innerHTML=cards.map(function(c){
+      return '<div class="meter"><span class="k">'+c.k+'</span>'+
+             '<div class="v">'+c.v+'</div><div class="sub">'+c.sub+'</div>'+
+             '<div class="meter-bar"><i class="'+c.cls+'" style="width:'+c.pct.toFixed(1)+'%"></i></div>'+
+             (c.extra||'')+'</div>';
+    }).join("");
+  }
+
+  /* ---------------- Render: balance sheet ---------------- */
+  function numInput(val,onChange){
+    const i=document.createElement("input");
+    i.type="number";i.step="0.01";i.className="amt-in";
+    i.setAttribute("inputmode","decimal");
+    i.value=(val==null?"":val);
+    i.addEventListener("change",function(){
+      const v=parseFloat(i.value);
+      onChange(isNaN(v)?0:v);
+    });
+    return i;
+  }
+
+  function renderBalance(){
+    const ab=document.getElementById("bodyAssets");
+    ab.innerHTML="";
+    state.assets.forEach(function(a){
+      const row=document.createElement("div");row.className="line-row";
+      const lab=document.createElement("div");lab.className="line-label";
+      lab.innerHTML='<span class="grp">'+a.group+'</span><span class="nm">'+a.label+'</span>';
+      const eu=document.createElement("span");eu.className="euro";eu.textContent="€";
+      const inp=numInput(a.amt,function(v){a.amt=v;save(false);renderHero();renderMeters();});
+      row.appendChild(lab);row.appendChild(eu);row.appendChild(inp);
+      ab.appendChild(row);
+    });
+    ab.classList.toggle("open",openSection.assets);
+
+    const db=document.getElementById("bodyDebts");
+    db.innerHTML="";
+    state.debts.forEach(function(d){
+      const row=document.createElement("div");row.className="line-row";
+      const lab=document.createElement("div");lab.className="line-label";
+      lab.innerHTML='<span class="grp">Restschuld</span><span class="nm">'+d.label+'</span>';
+      const eu=document.createElement("span");eu.className="euro";eu.textContent="€";
+      const inp=numInput(d.amt,function(v){d.amt=v;save(false);renderHero();renderMeters();});
+      row.appendChild(lab);row.appendChild(eu);row.appendChild(inp);
+      db.appendChild(row);
+    });
+    db.classList.toggle("open",openSection.debts);
+
+    document.querySelectorAll(".section-head .caret")[0].classList.toggle("open",openSection.assets);
+    document.querySelectorAll(".section-head .caret")[1].classList.toggle("open",openSection.debts);
+  }
+
+  function renderTotals(){
+    const t=totals();
+    const rows=[
+      ["Totale Spaarbuffer",fmt(t.spaar),false],
+      ["Totaal Cash (Lopend)",fmt(t.cash),false],
+      ["Totale Beleggingen",fmt(t.beleg),false],
+      ["Totaal Bezittingen (Assets)",fmt(t.assets),true],
+      ["Totale Schulden (Debts)",fmt(t.debts),true],
+      ["Netto Vermogen",fmt(t.net),true]
+    ];
+    document.getElementById("bodyTotals").innerHTML=rows.map(function(r,i){
+      const last=i===rows.length-1;
+      const color=last?(t.net<0?"var(--debt)":"var(--asset)"):"";
+      return '<div class="line-row"'+(r[2]?' style="border-top:1px solid var(--line);"':'')+'>'+
+             '<div class="line-label"><span class="nm"'+(r[2]?' style="font-weight:700;"':'')+'>'+r[0]+'</span></div>'+
+             '<span class="euro num"'+(r[2]?' style="font-weight:700;color:'+(color||'var(--ink)')+';"':'')+'>'+r[1]+'</span>'+
+             '</div>';
+    }).join("");
+  }
+
+  /* ---------------- Render: months ---------------- */
+  function itemRow(cfg){
+    const row=document.createElement("div");
+    row.className="item"+(cfg.checked?" checked":"");
+
+    const cb=document.createElement("input");
+    cb.type="checkbox";cb.className="cbx";cb.checked=!!cfg.checked;
+    cb.addEventListener("change",function(e){cfg.onCheck(e.target.checked);});
+
+    const main=document.createElement("div");main.className="item-main";
+    const nm=document.createElement("div");nm.className="item-name";nm.textContent=cfg.name;
+    main.appendChild(nm);
+    if(cfg.planned!=null){
+      const pl=document.createElement("span");pl.className="item-plan";
+      pl.textContent="gepland "+fmt(cfg.planned);
+      if(cfg.checked&&cfg.planned>0){
+        const diff=(cfg.actual!=null?cfg.actual:cfg.planned)-cfg.planned;
+        if(Math.abs(diff)>=0.01){
+          const tag=document.createElement("span");
+          tag.className="delta "+(diff>0?"more":"less");
+          tag.textContent=(diff>0?"+":"−")+fmtShort(Math.abs(diff)).replace("€ ","€");
+          pl.appendChild(tag);
+        }
+      }
+      main.appendChild(pl);
+    }
+
+    const eu=document.createElement("span");eu.className="euro";eu.textContent="€";
+    const inp=numInput(cfg.actual!=null?cfg.actual:(cfg.planned||0),cfg.onAmount);
+    inp.disabled=!cfg.checked;
+
+    row.appendChild(cb);row.appendChild(main);row.appendChild(eu);row.appendChild(inp);
+    if(cfg.onDelete){
+      const b=document.createElement("button");b.className="del";b.innerHTML="✕";
+      b.setAttribute("aria-label","Verwijderen");
+      b.addEventListener("click",function(e){e.stopPropagation();cfg.onDelete();});
+      row.appendChild(b);
+    }
+    return row;
+  }
+
+  function renderMonths(){
+    const app=document.getElementById("app");
+    app.innerHTML="";
+    let lastPhase=null;
+
+    plan.forEach(function(m){
+      const s=monthState(m);
+      const open=openMonth===m.key;
+      const planTotal=m.items.reduce(function(a,i){return a+i.amt;},0);
+      const paidTotal=m.items.reduce(function(a,i,idx){return a+(s.checks[idx]?Number(s.actuals[idx]||0):0);},0)
+                     +s.extra.reduce(function(a,x){return a+(x.checked?Number(x.amt||0):0);},0);
+      const nTotal=m.items.length+s.extra.length;
+      const nDone=s.checks.filter(Boolean).length+s.extra.filter(function(x){return x.checked;}).length;
+      const done=nTotal>0&&nDone===nTotal;
+
+      if(m.phase!==lastPhase){
+        const p=document.createElement("div");p.className="phase";p.textContent=m.phase;
+        app.appendChild(p);lastPhase=m.phase;
+      }
+
+      const card=document.createElement("div");card.className="month";
+
+      const head=document.createElement("div");
+      head.className="month-head"+(done?" done":"");
+      head.innerHTML='<div><div class="month-name">'+m.label+'</div>'+
+                     '<div class="month-sub">'+fmt(paidTotal)+" van "+fmt(planTotal)+'</div>'+
+                     (m.milestone?'<div class="milestone">'+m.milestone+'</div>':'')+'</div>'+
+                     '<span class="pill'+(done?" done":"")+'">'+nDone+"/"+nTotal+'</span>';
+      head.addEventListener("click",function(){openMonth=open?null:m.key;renderMonths();});
+      card.appendChild(head);
+
+      const pr=document.createElement("div");pr.className="month-progress";
+      pr.innerHTML='<i style="width:'+(planTotal?Math.min(100,paidTotal/planTotal*100):0)+'%"></i>';
+      card.appendChild(pr);
+
+      const body=document.createElement("div");body.className="month-body"+(open?" open":"");
+
+      m.items.forEach(function(it,idx){
+        body.appendChild(itemRow({
+          name:it.name,planned:it.amt,checked:s.checks[idx],actual:s.actuals[idx],
+          onCheck:function(v){s.checks[idx]=v;save(false);renderMonths();},
+          onAmount:function(v){s.actuals[idx]=v;save(false);renderMonths();}
+        }));
+      });
+      s.extra.forEach(function(x,i){
+        body.appendChild(itemRow({
+          name:x.name,planned:null,checked:x.checked,actual:x.amt,
+          onCheck:function(v){x.checked=v;save(false);renderMonths();},
+          onAmount:function(v){x.amt=v;save(false);renderMonths();},
+          onDelete:function(){s.extra.splice(i,1);save(false);renderMonths();}
+        }));
+      });
+
+      const add=document.createElement("div");add.className="add-row";
+      add.innerHTML='<input type="text" placeholder="Extra post" class="xn">'+
+                    '<input type="number" step="0.01" inputmode="decimal" placeholder="Bedrag" class="xa">'+
+                    '<button class="add-btn">Toevoegen</button>';
+      add.querySelector(".add-btn").addEventListener("click",function(){
+        const n=add.querySelector(".xn").value.trim();
+        const v=parseFloat(add.querySelector(".xa").value);
+        if(!n||isNaN(v))return;
+        s.extra.push({name:n,amt:v,checked:true});
+        save(false);renderMonths();
+      });
+      body.appendChild(add);
+
+      card.appendChild(body);
+      app.appendChild(card);
+    });
+  }
+
+  function renderAll(){renderHero();renderMeters();renderBalance();renderTotals();renderMonths();}
+
+  /* ---------------- Events ---------------- */
+  document.querySelectorAll(".section-head").forEach(function(h){
+    h.addEventListener("click",function(){
+      const k=h.getAttribute("data-toggle");
+      openSection[k]=!openSection[k];
+      renderBalance();
+    });
+  });
+
+  document.getElementById("saveBtn").addEventListener("click",function(){
+    const t=totals();
+    const d=new Date();
+    const stamp=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+    const h=state.history;
+    if(!h.length||h[h.length-1].date!==stamp)h.push({date:stamp,net:Math.round(t.net*100)/100});
+    else h[h.length-1].net=Math.round(t.net*100)/100;
+    if(h.length>40)h.splice(0,h.length-40);
+    save(true).then(renderSpark);
+  });
+
+  document.getElementById("resetBtn").addEventListener("click",function(){
+    if(!confirm("Alles resetten? Ook je balans en extra posten gaan terug naar de startwaarden."))return;
+    state={months:{},assets:null,debts:null,history:[]};
+    hydrate();save(true);renderAll();
+  });
+
+  /* ---------------- Init ---------------- */
+  (function stampDate(){
+    const d=new Date();
+    document.getElementById("todayLbl").textContent=d.getDate()+" "+NL[d.getMonth()].toLowerCase()+" "+d.getFullYear();
+  })();
+
+  function safeRender(){
+    try{renderAll();return true;}
+    catch(e){
+      console.error(e);
+      const a=document.getElementById("app");
+      if(a)a.innerHTML='<div class="loading">Er ging iets mis bij het tekenen van dit scherm.</div>';
+      return false;
+    }
+  }
+
+  /* Paint straight away with the defaults — nothing waits on storage.
+     Stored progress is merged in afterwards and the screen redraws. */
+  hydrate();
+  safeRender();
+
+  (async function loadStored(){
+    let stored=null;
+    try{
+      stored=await Promise.race([
+        load(),
+        new Promise(function(_,rej){setTimeout(function(){rej(new Error("timeout"));},1500);})
+      ]);
+    }catch(e){/* keep the defaults already on screen */}
+    if(stored){
+      state=Object.assign(state,stored);
+      // the flag must come from the stored data, not from the first paint,
+      // otherwise a correction never reaches an older save
+      state.seedVersion=stored.seedVersion;
+      hydrate();
+      safeRender();
+    }
+    if(storageBroken)warnOnce();
+  })();
+
+})();
+</script>
+</body>
+</html>
