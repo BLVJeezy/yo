@@ -446,7 +446,8 @@
 
   /* ---------------- Defaults ---------------- */
   const DEFAULT_ASSETS=[
-    {id:"noodbuffer", group:"Noodbuffer 1",       label:"Noodbuffer 1 (Revolut)",    amt:693,  kind:"spaar"},
+    {id:"noodbuffer", group:"Noodbuffer 1",       label:"Revolut Spaarbuffer",       amt:1148, kind:"spaar"},
+    {id:"nood_cash",  group:"Noodbuffer 1",       label:"Cash",                      amt:400,  kind:"spaar"},
     {id:"buffer2",    group:"Buffer 2 (bruiloft)",label:"Buffer 2 — Bruiloft",       amt:0,    kind:"buffer2"},
     {id:"kbc",        group:"Overige rekeningen", label:"KBC",                       amt:40,   kind:"cash"},
     {id:"revbiz",     group:"Overige rekeningen", label:"Revolut Business",          amt:80,   kind:"cash"},
@@ -500,7 +501,7 @@
     return null;
   }
 
-  const SEED_VERSION=13;
+  const SEED_VERSION=14;
 
   function hydrate(){
     if(!Array.isArray(state.assets)||!state.assets.length)state.assets=JSON.parse(JSON.stringify(DEFAULT_ASSETS));
