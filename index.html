@@ -394,17 +394,16 @@
 
   /* ---------------- Defaults ---------------- */
   const DEFAULT_ASSETS=[
-    {id:"spaarbuffer",group:"Spaarbuffer",        label:"Revolut Spaarbuffer",       amt:744,    kind:"spaar"},
-    {id:"revbiz",     group:"Spaarbuffer",        label:"Revolut Business",          amt:0,      kind:"spaar"},
-    {id:"kbclopend",  group:"Cash",               label:"KBC lopend",                amt:335,    kind:"cash"},
-    {id:"kbcbeleg",   group:"Beleggingen",        label:"KBC Beleggen",              amt:183,    kind:"beleg"},
-    {id:"teck",       group:"Beleggingen",        label:"Teck Resources",            amt:379.72, kind:"beleg"},
-    {id:"vuaa",       group:"Beleggingen",        label:"Vanguard S&P 500 (VUAA)",   amt:374.56, kind:"beleg"},
-    {id:"iwda",       group:"Beleggingen",        label:"iShares Core MSCI World (IWDA)",amt:100.43,kind:"beleg"},
-    {id:"peugeot",    group:"Overige bezittingen",label:"Peugeot 208 (2022, 96k km)",amt:9500,   kind:"overig"},
-    {id:"iphone",     group:"Overige bezittingen",label:"iPhone 17 Pro Max",         amt:1000,   kind:"overig"},
-    {id:"vordering",  group:"Overige bezittingen",label:"Vorderingen (lening)",      amt:367,    kind:"overig"},
-    {id:"macmini",    group:"Overige bezittingen",label:"Mac Mini M1",               amt:300,    kind:"overig"}
+    {id:"spaarbuffer",group:"Spaarbuffer",        label:"Revolut Spaarbuffer",       amt:1148, kind:"spaar"},
+    {id:"cash_sb",    group:"Spaarbuffer",        label:"Cash",                      amt:400,  kind:"spaar"},
+    {id:"kbc",        group:"Overige rekeningen", label:"KBC",                       amt:40,   kind:"cash"},
+    {id:"revbiz",     group:"Overige rekeningen", label:"Revolut Business",          amt:80,   kind:"cash"},
+    {id:"kbcinvest",  group:"Beleggingen",        label:"KBC Invest",                amt:181,  kind:"beleg"},
+    {id:"revinvest",  group:"Beleggingen",        label:"Revolut Invest",            amt:850,  kind:"beleg"},
+    {id:"peugeot",    group:"Overige bezittingen",label:"Peugeot 208 (2022, 96k km)",amt:9500, kind:"overig"},
+    {id:"iphone",     group:"Overige bezittingen",label:"iPhone 17 Pro Max",         amt:1000, kind:"overig"},
+    {id:"vordering",  group:"Overige bezittingen",label:"Vorderingen (lening)",      amt:367,  kind:"overig"},
+    {id:"macmini",    group:"Overige bezittingen",label:"Mac Mini M1",               amt:300,  kind:"overig"}
   ];
   const DEFAULT_DEBTS=[
     {id:"buyway",    label:"Buy Way",    amt:1138.77, start:2500},
@@ -457,7 +456,7 @@
     return null;
   }
 
-  const SEED_VERSION=11;
+  const SEED_VERSION=12;
 
   function hydrate(){
     if(!Array.isArray(state.assets)||!state.assets.length)state.assets=JSON.parse(JSON.stringify(DEFAULT_ASSETS));
