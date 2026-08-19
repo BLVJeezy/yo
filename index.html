@@ -385,8 +385,13 @@
   .leg .li{display:flex;align-items:center;gap:5px;}
   .leg .sw{width:8px;height:8px;border-radius:2px;}
 
-  .month.dim{opacity:0.35;filter:saturate(0.5);}
-  .month{transition:opacity .25s ease,filter .25s ease;}
+  .phase-viewport{overflow:hidden;}
+  .phase-pane{touch-action:pan-y;}
+  @keyframes paneInR{from{opacity:0;transform:translateX(42px);}to{opacity:1;transform:none;}}
+  @keyframes paneInL{from{opacity:0;transform:translateX(-42px);}to{opacity:1;transform:none;}}
+  .pane-in-r{animation:paneInR .32s cubic-bezier(.4,0,.2,1);}
+  .pane-in-l{animation:paneInL .32s cubic-bezier(.4,0,.2,1);}
+  .verses .verse{border-top:1px solid var(--line);}
 
   /* ---- Desktop ---- */
   @media(hover:hover){
@@ -426,33 +431,6 @@
 
 <div class="layout">
 <div class="col-left">
-
-<div class="ptabs" id="ptabs">
-  <button class="ptab" data-p="1">Fase 1 <span>'26</span></button>
-  <button class="ptab" data-p="2">Fase 2 <span>'27</span></button>
-  <button class="ptab" data-p="3">Fase 3 <span>'28</span></button>
-</div>
-
-<div class="section pgoals" id="pgoals">
-  <div style="padding:14px 16px 4px;"><span class="eyebrow">Fasedoelen · actieve fase vs einddoel</span></div>
-  <div id="pgoalsBody"></div>
-</div>
-
-<div class="section verses">
-  <div style="padding:14px 16px 2px;"><span class="eyebrow">Fundament</span></div>
-  <div class="verse">
-    <p>"De plannen van wie vlijtig is, leiden tot overvloed — haastwerk leidt tot gebrek."</p>
-    <span class="ref">Spreuken 21:5 · planning &amp; volharding</span>
-  </div>
-  <div class="verse">
-    <p>"Wie leent, wordt slaaf van de uitlener. Wees niemand iets schuldig dan elkaar lief te hebben."</p>
-    <span class="ref">Spreuken 22:7 · Romeinen 13:8 · schuldvrij</span>
-  </div>
-  <div class="verse">
-    <p>"Vermogen dat beetje bij beetje vergaard wordt, groeit gestaag aan."</p>
-    <span class="ref">Spreuken 13:11 · gestaag bouwen</span>
-  </div>
-</div>
 
 <div class="hero">
   <div class="eyebrow">Netto vermogen</div>
@@ -514,8 +492,30 @@
 </div><!-- /col-left -->
 <div class="col-right">
 
+<div class="ptabs" id="ptabs">
+  <button class="ptab" data-p="1">Fase 1 <span>'26</span></button>
+  <button class="ptab" data-p="2">Fase 2 <span>'27</span></button>
+  <button class="ptab" data-p="3">Fase 3 <span>'28</span></button>
+</div>
+
+<div class="phase-viewport">
+<div class="phase-pane" id="phasePane">
+
+<div class="section pgoals" id="pgoals">
+  <div style="padding:14px 16px 4px;"><span class="eyebrow" id="pgoalsEyebrow">Fasedoel</span></div>
+  <div id="pgoalsBody"></div>
+</div>
+
 <div class="phase">Maandelijkse opvolging</div>
 <div id="app"><div class="loading">Bezig met laden…</div></div>
+
+<div class="section verses" id="quotesCard">
+  <div style="padding:14px 16px 2px;"><span class="eyebrow" id="quotesEyebrow">Fundament</span></div>
+  <div id="quotesBody"></div>
+</div>
+
+</div><!-- /phase-pane -->
+</div><!-- /phase-viewport -->
 
 <button class="reset" id="resetBtn">Alles resetten</button>
 <div class="footnote">Tik op een maand om te openen. Vink af wat betaald is en pas het bedrag aan als het afwijkt.</div>
@@ -947,6 +947,7 @@
     let lastPhase=null;
 
     plan.forEach(function(m){
+      if(m.phase.indexOf("Fase "+selPhase)!==0)return;
       const s=monthState(m);
       const open=openMonth===m.key;
       const planTotal=m.items.reduce(function(a,i){return a+i.amt;},0);
@@ -962,7 +963,7 @@
       }
 
       const card=document.createElement("div");
-      card.className="month"+(selPhase&&m.phase.indexOf("Fase "+selPhase)!==0?" dim":"");
+      card.className="month";
 
       const head=document.createElement("div");
       head.className="month-head"+(done?" done":"");
@@ -1033,39 +1034,63 @@
     };
   }
 
+  const PHASE_META={
+    1:{title:"Schuld weg + noodbuffer",when:"sep – dec 2026",theme:"schuld & planning"},
+    2:{title:"Buffer 2 (bruiloft) + beleggen",when:"jan – dec 2027",theme:"gestaag bouwen"},
+    3:{title:"Alles naar de beurs",when:"jan – dec 2028",theme:"bewaren & vrijgevigheid"}
+  };
+
   function renderPhases(){
     const t=totals();
-    const bars=phaseBars(t);
-    const meta=[
-      {n:1,title:"Schuld weg + noodbuffer",when:"sep – dec 2026"},
-      {n:2,title:"Buffer 2 (bruiloft) + beleggen",when:"jan – dec 2027"},
-      {n:3,title:"Alles naar de beurs",when:"jan – dec 2028"}
-    ];
+    const bars=phaseBars(t)[selPhase];
+    const mt=PHASE_META[selPhase];
     const yearNow=new Date().getFullYear();
     const activeN=yearNow<=2026?1:(yearNow===2027?2:3);
-    let html="";
-    meta.forEach(function(mt){
-      const bs=bars[mt.n];
-      const allDone=bs.every(function(b){return b.cur>=b.goal;});
-      const chip=allDone?'<span class="chip done">✓ behaald</span>'
-                :(mt.n===activeN?'<span class="chip act">actief</span>':'<span class="chip soon">komend</span>');
-      html+='<div class="pgoal'+(mt.n===selPhase?' focus':'')+'" data-p="'+mt.n+'">'
-          +'<div class="pgoal-head"><span class="pgoal-title">Fase '+mt.n+' · '+mt.title+'</span>'+chip+'</div>'
-          +'<div class="pgoal-when">'+mt.when+'</div>'
-          +bs.map(function(b){
-            const pct=Math.min(100,b.cur/b.goal*100);
-            return '<div class="pgoal-bar"><div class="lbl"><span>'+b.lbl+'</span><b>'+b.txt+'</b></div>'
-                 +'<div class="meter-bar"><i class="a" style="width:'+pct.toFixed(1)+'%"></i></div></div>';
-          }).join("")
-          +'</div>';
-    });
+    const allDone=bars.every(function(b){return b.cur>=b.goal;});
+    const chip=allDone?'<span class="chip done">✓ behaald</span>'
+              :(selPhase===activeN?'<span class="chip act">actief</span>':'<span class="chip soon">komend</span>');
+    let html='<div class="pgoal focus">'
+        +'<div class="pgoal-head"><span class="pgoal-title">Fase '+selPhase+' · '+mt.title+'</span>'+chip+'</div>'
+        +'<div class="pgoal-when">'+mt.when+'</div>'
+        +bars.map(function(b){
+          const pct=Math.min(100,b.cur/b.goal*100);
+          return '<div class="pgoal-bar"><div class="lbl"><span>'+b.lbl+'</span><b>'+b.txt+'</b></div>'
+               +'<div class="meter-bar"><i class="a" style="width:'+pct.toFixed(1)+'%"></i></div></div>';
+        }).join("")
+        +'</div>';
     const endPct=Math.min(100,Math.max(0,t.planNet/35536.28*100));
     html+='<div class="pgoal-end"><div class="lbl"><span>EINDDOEL · DEC 2028</span><span>'+fmtShort(t.planNet)+' / €35.536</span></div>'
         +'<div class="meter-bar"><i class="o" style="width:'+endPct.toFixed(1)+'%"></i></div></div>';
     document.getElementById("pgoalsBody").innerHTML=html;
+    document.getElementById("pgoalsEyebrow").textContent="Fasedoel · fase "+selPhase+" vs einddoel";
     document.querySelectorAll(".ptab").forEach(function(b){
       b.classList.toggle("on",+b.getAttribute("data-p")===selPhase);
     });
+  }
+
+  /* ---------------- Fase-quotes ---------------- */
+  const QUOTES={
+    1:[
+      {t:"De plannen van wie vlijtig is, leiden tot overvloed — haastwerk leidt tot gebrek.",r:"Spreuken 21:5"},
+      {t:"Wie leent, wordt slaaf van de uitlener.",r:"Spreuken 22:7"},
+      {t:"Wees niemand iets schuldig dan elkaar lief te hebben.",r:"Romeinen 13:8"}
+    ],
+    2:[
+      {t:"Vermogen dat beetje bij beetje vergaard wordt, groeit gestaag aan.",r:"Spreuken 13:11"},
+      {t:"In het huis van de wijze liggen kostbare schatten — een dwaas jaagt alles erdoor.",r:"Spreuken 21:20"},
+      {t:"Regel eerst je werk buiten en maak je akker gereed; bouw daarna je huis.",r:"Spreuken 24:27"}
+    ],
+    3:[
+      {t:"De één deelt ruimhartig uit en krijgt steeds meer; wie vasthoudt komt tekort.",r:"Spreuken 11:24"},
+      {t:"Een goed mens laat een erfenis na aan de kinderen van zijn kinderen.",r:"Spreuken 13:22"},
+      {t:"Stel je hoop niet op onzekere rijkdom; wees rijk in goede daden en bereid te delen — zo leg je een fundament voor de toekomst.",r:"1 Timoteüs 6:17-19"}
+    ]
+  };
+  function renderQuotes(){
+    document.getElementById("quotesBody").innerHTML=QUOTES[selPhase].map(function(q){
+      return '<div class="verse"><p>"'+q.t+'"</p><span class="ref">'+q.r+'</span></div>';
+    }).join("");
+    document.getElementById("quotesEyebrow").textContent="Fundament · "+PHASE_META[selPhase].theme;
   }
 
   /* ---------------- Componentenchart ---------------- */
@@ -1143,17 +1168,41 @@
     if(hair){hair.setAttribute("x1",-10);hair.setAttribute("x2",-10);}
   }
 
-  function renderAll(){renderHero();renderMeters();renderPhases();renderComponents();renderBalance();renderTotals();renderMonths();}
+  function renderAll(){renderHero();renderMeters();renderComponents();renderBalance();renderTotals();renderPhases();renderQuotes();renderMonths();}
 
   /* ---------------- Events ---------------- */
+  function renderPhaseContent(){renderPhases();renderQuotes();renderMonths();}
+  function setPhase(n,animate){
+    n=Math.max(1,Math.min(3,n));
+    if(n===selPhase)return;
+    const dir=n>selPhase?"r":"l";
+    selPhase=n;
+    renderPhaseContent();
+    if(animate!==false){
+      const pane=document.getElementById("phasePane");
+      pane.classList.remove("pane-in-r","pane-in-l");
+      void pane.offsetWidth;
+      pane.classList.add(dir==="r"?"pane-in-r":"pane-in-l");
+    }
+  }
   document.querySelectorAll(".ptab").forEach(function(b){
-    b.addEventListener("click",function(){
-      selPhase=+b.getAttribute("data-p");
-      renderPhases();renderMonths();
-      const first=document.querySelector(".month:not(.dim)");
-      if(first&&typeof first.scrollIntoView==="function")first.scrollIntoView({behavior:"smooth",block:"start"});
-    });
+    b.addEventListener("click",function(){setPhase(+b.getAttribute("data-p"));});
   });
+  (function(){
+    const pane=document.getElementById("phasePane");
+    if(!pane)return;
+    let sx=0,sy=0,tracking=false;
+    pane.addEventListener("touchstart",function(e){
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;
+    },{passive:true});
+    pane.addEventListener("touchend",function(e){
+      if(!tracking)return;tracking=false;
+      const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+      if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){
+        setPhase(selPhase+(dx<0?1:-1));
+      }
+    },{passive:true});
+  })();
 
   (function(){
     const wrap=document.querySelector(".comp-wrap");
