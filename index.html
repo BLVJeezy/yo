@@ -341,10 +341,10 @@
     <div class="breakeven-note" id="beNote"></div>
   </div>
 
-  <div class="spark" id="sparkWrap" style="display:none;">
-    <div class="eyebrow">Verloop netto vermogen</div>
-    <svg id="sparkSvg" viewBox="0 0 300 44" preserveAspectRatio="none"></svg>
-    <div class="spark-label"><span id="sparkFrom"></span><span id="sparkTo"></span></div>
+  <div class="spark" id="sparkWrap">
+    <div class="eyebrow">Plan vs realiteit · netto binnen plan</div>
+    <svg id="sparkSvg" viewBox="0 0 300 112" preserveAspectRatio="none"></svg>
+    <div class="spark-label"><span id="sparkFrom"></span><span id="sparkNow"></span><span id="sparkTo"></span></div>
   </div>
 </div>
 
@@ -385,51 +385,69 @@
   const NL=["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"];
   function range(y,m,n){const a=[];for(let i=0;i<n;i++){const d=new Date(y,m+i,1);a.push({y:d.getFullYear(),m:d.getMonth()});}return a;}
 
-  const ITEMS_A=[["Buy Way",361],["Stellantis auto",322.77],["Auto & Business kosten",460],["Sparen",250],["S&P 500 / Investeringen",150]];
+  // Actieplan aug 2026 – dec 2028. Per rij: [jaar, maand(0-based), auto+leefgeld,
+  // buy way, noodbuffer 1, buffer 2 (bruiloft), beleggingen, projectie netto binnen plan, milestone]
+  const ROWS=[
+    [2026,8, 1242.77, 250,    519.68,  0,       0,       1354.91, null],
+    [2026,9, 1242.77, 250,    519.68,  0,       0,       2124.59, null],
+    [2026,10,1242.77, 638.77, 1930.91, 0,       0,       4694.27, "Buy Way volledig afgelost"],
+    [2026,11,1442.77, 0,      1336.73, 266.50,  266.45,  6563.95, "Noodbuffer 1 op €5.000"],
+    [2027,0, 1242.77, 0,      0,       384.84,  384.84,  7333.63, null],
+    [2027,1, 1342.77, 0,      0,       334.84,  334.84,  8003.31, null],
+    [2027,2, 1242.77, 0,      0,       384.84,  384.84,  8772.99, null],
+    [2027,3, 1242.77, 0,      0,       384.84,  384.84,  9542.67, null],
+    [2027,4, 1242.77, 0,      0,       1534.84, 1534.84, 12612.35,"Vakantiegeld-boost"],
+    [2027,5, 1242.77, 0,      0,       384.84,  384.84,  13382.03,null],
+    [2027,6, 1242.77, 0,      0,       384.84,  384.84,  14151.71,null],
+    [2027,7, 1242.77, 0,      0,       384.84,  384.84,  14921.39,null],
+    [2027,8, 1242.77, 0,      0,       384.84,  384.84,  15691.07,null],
+    [2027,9, 1242.77, 0,      0,       384.84,  384.84,  16460.75,null],
+    [2027,10,1242.77, 0,      0,       1284.84, 1284.85, 19030.44,"13e maand → buffer + beurs"],
+    [2027,11,1442.77, 0,      0,       1000.26, 1069.42, 21100.12,"Buffer 2 (bruiloft) op €7.500"],
+    [2028,0, 1242.77, 0,      0,       0,       769.68,  21869.80,null],
+    [2028,1, 1242.77, 0,      0,       0,       769.68,  22639.48,null],
+    [2028,2, 1242.77, 0,      0,       0,       769.68,  23409.16,null],
+    [2028,3, 1242.77, 0,      0,       0,       769.68,  24178.84,null],
+    [2028,4, 1242.77, 0,      0,       0,       3069.68, 27248.52,"Vakantiegeld → beurs"],
+    [2028,5, 1242.77, 0,      0,       0,       769.68,  28018.20,null],
+    [2028,6, 1242.77, 0,      0,       0,       769.68,  28787.88,null],
+    [2028,7, 1242.77, 0,      0,       0,       769.68,  29557.56,null],
+    [2028,8, 1242.77, 0,      0,       0,       769.68,  30327.24,null],
+    [2028,9, 1242.77, 0,      0,       0,       769.68,  31096.92,null],
+    [2028,10,1242.77, 0,      0,       0,       2569.68, 33666.60,null],
+    [2028,11,1442.77, 0,      0,       0,       1869.68, 35536.28,"Eind: €23k belegd · €35,5k netto"]
+  ];
+  const PROJ_START={y:2026,m:7,net:585.23}; // aug 2026, startpunt van het plan
 
-  const plan=[];
-  function push(months,items,phase,milestone){
-    months.forEach(function(o){
-      plan.push({
-        key:o.y+"-"+String(o.m+1).padStart(2,"0"),
-        label:NL[o.m]+" "+o.y,
-        phase:phase,
-        milestone:milestone||null,
-        items:items.map(function(p){return {name:p[0],amt:p[1]};})
-      });
-    });
+  function phaseOf(y,m){
+    if(y===2026)return "Fase 1 · Schuld weg + noodbuffer";
+    if(y===2027)return "Fase 2 · Buffer 2 (bruiloft) + beleggen";
+    return "Fase 3 · Alles naar de beurs";
   }
-  // Augustus 2026 — historische maand, van vóór het masterplan. Structuur ongewijzigd
-  // gelaten zodat de al opgeslagen/ingebakken augustus-gegevens blijvend kloppen.
-  push(range(2026,7,1),ITEMS_A,"Fase 1 · Buy Way + Stellantis");
-
-  // Masterplan (Sep 2026 – Jul 2027) — 3 fases, uit het nieuwe maandoverzicht.
-  const FIXED=[["Autokosten",632.77],["Leefgeld",600]];
-  const FIXED_DEC=[["Autokosten",632.77],["Leefgeld (incl. €260 kerst/fun bonus)",860]];
-  const FASE1=[["Buy Way aflossing",569.39],["Revolut Spaarbuffer",100],["KBC Beleggen",50],["Revolut Beleggen",47.84]];
-  const FASE3=[["Revolut Spaarbuffer",143.45],["KBC Beleggen",50],["Revolut Beleggen",573.78]];
-  const F1="Fase 1 · Buy Way aflossen", F2="Fase 2 · 80% sparen / 20% beurs", F3="Fase 3 · 80% beurs / 20% sparen";
-
-  push(range(2026,8,1), FASE1.concat(FIXED), F1, "Buy Way helft afgelost");
-  push(range(2026,9,1), FASE1.concat(FIXED), F1, "Buy Way 100% schuldenvrij!");
-  push(range(2026,10,1),
-    [["Revolut Spaarbuffer",2373.78],["KBC Beleggen",50],["Revolut Beleggen",143.45]].concat(FIXED),
-    F2, "Spaarboost (+ €1.800 belastingteruggave)");
-  push(range(2026,11,1),
-    [["Revolut Spaarbuffer",1282.44],["KBC Beleggen",50],["Revolut Beleggen",1174.79]].concat(FIXED_DEC),
-    F2, "€5k spaardoel behaald (+ €1.300 bonus)");
-  push(range(2027,0,1), FASE3.concat(FIXED), F3, "Start 80% beleggen / 20% sparen");
-  push(range(2027,1,1), FASE3.concat(FIXED), F3, "Maximale vermogensopbouw");
-  push(range(2027,2,1), FASE3.concat(FIXED), F3, "Vlak voor de €10k-grens");
-  push(range(2027,3,1), FASE3.concat(FIXED), F3, "€10.000 vermogensgrens doorbroken!");
-  push(range(2027,4,1), FASE3.concat(FIXED), F3, "Beurs > Spaarbuffer");
-  push(range(2027,5,1), FASE3.concat(FIXED), F3, "Gestage kapitaalopbouw");
-  push(range(2027,6,1), FASE3.concat(FIXED), F3, "Eindrapport: > €13.000 vermogen!");
+  const plan=[];
+  ROWS.forEach(function(r){
+    const y=r[0],m=r[1];
+    const items=[["Auto + leefgeld",r[2]]];
+    if(r[3]>0)items.push(["Buy Way aflossing",r[3]]);
+    if(r[4]>0)items.push(["Noodbuffer 1",r[4]]);
+    if(r[5]>0)items.push(["Buffer 2 (bruiloft)",r[5]]);
+    if(r[6]>0)items.push(["Beleggingen",r[6]]);
+    plan.push({
+      key:y+"-"+String(m+1).padStart(2,"0"),
+      label:NL[m]+" "+y,
+      phase:phaseOf(y,m),
+      milestone:r[8],
+      items:items.map(function(p){return {name:p[0],amt:p[1]};})
+    });
+  });
+  const PROJECTION=[{key:"2026-08",net:PROJ_START.net}].concat(ROWS.map(function(r){
+    return {key:r[0]+"-"+String(r[1]+1).padStart(2,"0"),net:r[7]};
+  }));
 
   /* ---------------- Defaults ---------------- */
   const DEFAULT_ASSETS=[
-    {id:"spaarbuffer",group:"Spaarbuffer",        label:"Revolut Spaarbuffer",       amt:1148, kind:"spaar"},
-    {id:"cash_sb",    group:"Spaarbuffer",        label:"Cash",                      amt:400,  kind:"spaar"},
+    {id:"noodbuffer", group:"Noodbuffer 1",       label:"Noodbuffer 1 (Revolut)",    amt:693,  kind:"spaar"},
+    {id:"buffer2",    group:"Buffer 2 (bruiloft)",label:"Buffer 2 — Bruiloft",       amt:0,    kind:"buffer2"},
     {id:"kbc",        group:"Overige rekeningen", label:"KBC",                       amt:40,   kind:"cash"},
     {id:"revbiz",     group:"Overige rekeningen", label:"Revolut Business",          amt:80,   kind:"cash"},
     {id:"kbcinvest",  group:"Beleggingen",        label:"KBC Invest",                amt:181,  kind:"beleg"},
@@ -444,15 +462,7 @@
     {id:"stellantis",label:"Stellantis", amt:8560.23, start:8883.14,
      loanStart:"2024-07-29", loanEnd:"2029-07-28", monthly:322.77}
   ];
-  const GOAL_SPAAR=6020.37, GOAL_BELEG=7013.39;
-
-  const AUG_SEED={
-    checks:[true,true,true,true,true],
-    actuals:[311,322.77,460,250,136],
-    extra:[
-      {name:"Banden wisselen +Onderhoud", amt:420, checked:true}
-    ]
-  };
+  const GOAL_NOOD=5000, GOAL_BUFFER2=7500, GOAL_BELEG=23036.28;
 
   /* ---------------- State ---------------- */
   let state={months:{},assets:null,debts:null,history:[]};
@@ -490,28 +500,19 @@
     return null;
   }
 
-  const SEED_VERSION=12;
+  const SEED_VERSION=13;
 
   function hydrate(){
     if(!Array.isArray(state.assets)||!state.assets.length)state.assets=JSON.parse(JSON.stringify(DEFAULT_ASSETS));
     if(!Array.isArray(state.debts)||!state.debts.length)state.debts=JSON.parse(JSON.stringify(DEFAULT_DEBTS));
     if(!Array.isArray(state.history))state.history=[];
     if(!state.months||typeof state.months!=="object")state.months={};
-    if(!state.months["2026-08"])state.months["2026-08"]=JSON.parse(JSON.stringify(AUG_SEED));
 
-    // Latest figures as reported — applied once, also over older saved data
+    // Nieuw actieplan toegepast — vervangt balans en maandstructuur eenmalig, ook over oudere saves
     if(state.seedVersion!==SEED_VERSION){
       state.assets=JSON.parse(JSON.stringify(DEFAULT_ASSETS));
       state.debts=JSON.parse(JSON.stringify(DEFAULT_DEBTS));
-      const aug=state.months["2026-08"];
-      if(aug&&Array.isArray(aug.checks)&&Array.isArray(aug.actuals)){
-        aug.checks[0]=true;   aug.actuals[0]=311;    // Buy Way
-        aug.checks[2]=true;   aug.actuals[2]=460;    // Auto & Business kosten — volledig betaald
-        if(!Array.isArray(aug.extra))aug.extra=[];
-        if(!aug.extra.some(function(x){return x.name==="Banden wisselen +Onderhoud";})){
-          aug.extra.push({name:"Banden wisselen +Onderhoud", amt:420, checked:true});
-        }
-      }
+      state.months={}; // oude maandstructuur past niet meer op het nieuwe plan
       state.seedVersion=SEED_VERSION;
     }
   }
@@ -529,10 +530,12 @@
     const t=totals();
     const d=new Date();
     const stamp=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
+    const iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
     const h=state.history;
-    if(!h.length||h[h.length-1].date!==stamp)h.push({date:stamp,net:Math.round(t.net*100)/100});
-    else h[h.length-1].net=Math.round(t.net*100)/100;
-    if(h.length>40)h.splice(0,h.length-40);
+    const entry={date:stamp,iso:iso,net:Math.round(t.net*100)/100,plan:Math.round(t.planNet*100)/100};
+    if(!h.length||h[h.length-1].iso!==iso)h.push(entry);
+    else h[h.length-1]=entry;
+    if(h.length>80)h.splice(0,h.length-80);
     save();
   }
 
@@ -555,7 +558,10 @@
     const spaar=state.assets.filter(function(x){return x.kind==="spaar";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
     const beleg=state.assets.filter(function(x){return x.kind==="beleg";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
     const cash=state.assets.filter(function(x){return x.kind==="cash";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
-    return {assets:a,debts:d,net:a-d,spaar:spaar,beleg:beleg,cash:cash};
+    const buffer2=state.assets.filter(function(x){return x.kind==="buffer2";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
+    const buyway=state.debts.filter(function(x){return x.id==="buyway";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
+    const planNet=spaar+buffer2+beleg-buyway;
+    return {assets:a,debts:d,net:a-d,spaar:spaar,beleg:beleg,cash:cash,buffer2:buffer2,planNet:planNet};
   }
 
   /* ---------------- Render: hero ---------------- */
@@ -582,32 +588,59 @@
     renderSpark();
   }
 
+  function monthIdx(key){
+    const p=key.split("-"),y=+p[0],m=+p[1];
+    return (y-2026)*12+(m-1)-7; // 0 = aug 2026
+  }
+
   function renderSpark(){
-    const h=state.history||[];
-    const wrap=document.getElementById("sparkWrap");
-    if(h.length<2){wrap.style.display="none";return;}
-    wrap.style.display="block";
-    const vals=h.map(function(p){return p.net;});
+    const W=300,H=112,pad=8,padB=6;
+    const maxIdx=monthIdx(PROJECTION[PROJECTION.length-1].key);
+    const actual=(state.history||[]).filter(function(e){return e.iso&&typeof e.plan==="number";});
+    const t=totals();
+
+    let vals=PROJECTION.map(function(p){return p.net;}).concat(actual.map(function(e){return e.plan;}),[0,t.planNet]);
     const min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
     const span=(max-min)||1;
-    const W=300,H=44,pad=4;
-    const pts=vals.map(function(v,i){
-      const x=h.length===1?0:(i/(h.length-1))*W;
-      const y=H-pad-((v-min)/span)*(H-pad*2);
-      return x.toFixed(1)+","+y.toFixed(1);
-    });
-    const zeroY = (0>=min&&0<=max) ? (H-pad-((0-min)/span)*(H-pad*2)) : null;
-    const last=vals[vals.length-1];
-    const col=last<0?"#FF7A6E":"#3DE6A8";
-    document.getElementById("sparkSvg").style.filter="drop-shadow(0 0 6px "+(last<0?"rgba(255,122,110,0.4)":"rgba(61,230,168,0.4)")+")";
+    const X=function(idx){return pad+(idx/maxIdx)*(W-pad*2);};
+    const Y=function(v){return H-padB-((v-min)/span)*(H-pad-padB);};
+
     let svg="";
-    if(zeroY!==null)svg+='<line x1="0" y1="'+zeroY.toFixed(1)+'" x2="'+W+'" y2="'+zeroY.toFixed(1)+'" stroke="#2B313D" stroke-width="1" stroke-dasharray="3 3"/>';
-    svg+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
-    const lastPt=pts[pts.length-1].split(",");
-    svg+='<circle cx="'+lastPt[0]+'" cy="'+lastPt[1]+'" r="2.6" fill="'+col+'"/>';
+    // zero line
+    if(0>=min&&0<=max)svg+='<line x1="0" y1="'+Y(0).toFixed(1)+'" x2="'+W+'" y2="'+Y(0).toFixed(1)+'" stroke="#2B313D" stroke-width="1" stroke-dasharray="3 3"/>';
+    // plan projection: dashed, muted
+    const pts=PROJECTION.map(function(p){return X(monthIdx(p.key)).toFixed(1)+","+Y(p.net).toFixed(1);});
+    svg+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="1.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>';
+    // milestone dots on the plan line
+    ["2026-11","2026-12","2027-12","2028-12"].forEach(function(k){
+      const pr=PROJECTION.find(function(p){return p.key===k;});
+      if(pr)svg+='<circle cx="'+X(monthIdx(k)).toFixed(1)+'" cy="'+Y(pr.net).toFixed(1)+'" r="3" fill="none" stroke="#F0BC64" stroke-width="1.4"/>';
+    });
+    // actual line: realised "netto binnen plan"
+    if(actual.length){
+      const last=actual[actual.length-1].plan;
+      const col=last<0?"#FF7A6E":"#3DE6A8";
+      document.getElementById("sparkSvg").style.filter="drop-shadow(0 0 6px "+(last<0?"rgba(255,122,110,0.4)":"rgba(61,230,168,0.4)")+")";
+      const apts=actual.map(function(e){
+        const d=parseInt(e.iso.slice(8,10)||"15",10);
+        return X(monthIdx(e.iso.slice(0,7))+(d-1)/30).toFixed(1)+","+Y(e.plan).toFixed(1);
+      });
+      if(apts.length>1)svg+='<polyline points="'+apts.join(" ")+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+      const lp=apts[apts.length-1].split(",");
+      svg+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="3" fill="'+col+'"/>';
+    }
     document.getElementById("sparkSvg").innerHTML=svg;
-    document.getElementById("sparkFrom").textContent=h[0].date+"  "+fmtShort(h[0].net);
-    document.getElementById("sparkTo").textContent=fmtShort(last);
+    document.getElementById("sparkFrom").textContent="aug \u201926";
+    document.getElementById("sparkTo").textContent="dec \u201928 · "+fmtShort(35536.28);
+    // delta vs plan for the current month
+    const nowKey=new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0");
+    const target=PROJECTION.find(function(p){return p.key===nowKey;});
+    if(target){
+      const diff=t.planNet-target.net;
+      document.getElementById("sparkNow").textContent="nu "+fmtShort(t.planNet)+" ("+(diff>=0?"+":"−")+fmtShort(Math.abs(diff)).replace("€ ","€")+" vs plan)";
+    }else{
+      document.getElementById("sparkNow").textContent="nu "+fmtShort(t.planNet);
+    }
   }
 
   /* ---------------- Render: meters ---------------- */
@@ -633,8 +666,9 @@
       }
       cards.push({k:d.label+" restschuld",v:fmt(d.amt),sub:sub,pct:pct,cls:"d",extra:extra});
     });
-    cards.push({k:"Spaarbuffer",v:fmt(t.spaar),sub:"doel "+fmtShort(GOAL_SPAAR),pct:Math.min(100,t.spaar/GOAL_SPAAR*100),cls:"a"});
-    cards.push({k:"Beleggingen",v:fmt(t.beleg),sub:"doel "+fmtShort(GOAL_BELEG),pct:Math.min(100,t.beleg/GOAL_BELEG*100),cls:"a"});
+    cards.push({k:"Noodbuffer 1",v:fmt(t.spaar),sub:"doel "+fmtShort(GOAL_NOOD)+" · dec 2026",pct:Math.min(100,t.spaar/GOAL_NOOD*100),cls:"a"});
+    cards.push({k:"Buffer 2 · bruiloft",v:fmt(t.buffer2),sub:"doel "+fmtShort(GOAL_BUFFER2)+" · dec 2027",pct:Math.min(100,t.buffer2/GOAL_BUFFER2*100),cls:"a"});
+    cards.push({k:"Beleggingen",v:fmt(t.beleg),sub:"doel "+fmtShort(GOAL_BELEG)+" · dec 2028",pct:Math.min(100,t.beleg/GOAL_BELEG*100),cls:"a"});
 
     document.getElementById("meters").innerHTML=cards.map(function(c){
       return '<div class="meter"><span class="k">'+c.k+'</span>'+
@@ -691,9 +725,11 @@
   function renderTotals(){
     const t=totals();
     const rows=[
-      ["Totale Spaarbuffer",fmt(t.spaar),false],
-      ["Totaal Cash (Lopend)",fmt(t.cash),false],
-      ["Totale Beleggingen",fmt(t.beleg),false],
+      ["Noodbuffer 1",fmt(t.spaar),false],
+      ["Buffer 2 (bruiloft)",fmt(t.buffer2),false],
+      ["Cash rekeningen",fmt(t.cash),false],
+      ["Beleggingen",fmt(t.beleg),false],
+      ["Netto binnen plan",fmt(t.planNet),true],
       ["Totaal Bezittingen (Assets)",fmt(t.assets),true],
       ["Totale Schulden (Debts)",fmt(t.debts),true],
       ["Netto Vermogen",fmt(t.net),true]
