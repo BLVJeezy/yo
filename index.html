@@ -317,6 +317,77 @@
   }
   .footnote{text-align:center;font-size:0.7rem;color:#6A7383;margin-top:14px;line-height:1.5;}
   .loading{text-align:center;color:var(--muted);padding:36px 0;font-size:0.86rem;}
+  /* ---- Fase-tabs ---- */
+  .ptabs{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;
+  }
+  .ptab{
+    background:var(--glass);border:1px solid var(--line);color:var(--muted);
+    -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+    border-radius:14px;padding:10px 6px;min-height:46px;cursor:pointer;
+    font-family:var(--display);font-weight:600;font-size:0.85rem;
+    touch-action:manipulation;transition:color .15s,border-color .15s,box-shadow .15s;
+  }
+  .ptab span{display:block;font-family:var(--data);font-size:0.62rem;color:var(--muted);font-weight:500;margin-top:1px;}
+  .ptab.on{
+    color:var(--asset);border-color:rgba(61,230,168,0.45);
+    box-shadow:0 0 16px rgba(61,230,168,0.18),inset 0 0 18px rgba(61,230,168,0.06);
+  }
+  .ptab.on span{color:rgba(61,230,168,0.75);}
+
+  /* ---- Fasedoelen ---- */
+  .pgoal{padding:13px 16px 14px;border-top:1px solid var(--line);transition:background .2s;}
+  .pgoal.focus{background:rgba(61,230,168,0.05);box-shadow:inset 3px 0 0 var(--asset);}
+  .pgoal-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;}
+  .pgoal-title{font-family:var(--display);font-weight:600;font-size:0.88rem;}
+  .pgoal-when{font-family:var(--data);font-size:0.62rem;color:var(--muted);}
+  .chip{font-family:var(--data);font-size:0.6rem;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;}
+  .chip.act{background:rgba(61,230,168,0.15);color:var(--asset);border:1px solid rgba(61,230,168,0.3);}
+  .chip.soon{background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--line);}
+  .chip.done{background:rgba(61,230,168,0.22);color:var(--asset);}
+  .pgoal-bar{margin-top:9px;}
+  .pgoal-bar .lbl{display:flex;justify-content:space-between;font-family:var(--data);font-size:0.64rem;color:var(--muted);margin-bottom:4px;}
+  .pgoal-bar .lbl b{color:var(--ink);font-weight:600;}
+  .pgoal-end{
+    padding:12px 16px;border-top:1px solid var(--line);
+    background:rgba(240,188,100,0.05);
+  }
+  .pgoal-end .lbl{display:flex;justify-content:space-between;font-family:var(--data);font-size:0.64rem;color:var(--ochre);margin-bottom:5px;letter-spacing:0.06em;}
+  .meter-bar i.o{background:linear-gradient(90deg,#D69A3E,#F0BC64);box-shadow:0 0 10px rgba(240,188,100,0.5);}
+
+  /* ---- Bijbelverzen ---- */
+  .verses{margin-bottom:12px;}
+  .verse{padding:11px 16px 12px;border-top:1px solid var(--line);}
+  .verse p{
+    margin:0 0 5px;font-size:0.84rem;line-height:1.5;color:rgba(242,244,248,0.86);
+    font-style:italic;border-left:2px solid rgba(61,230,168,0.4);padding-left:11px;
+  }
+  .verse .ref{font-family:var(--data);font-size:0.62rem;color:var(--muted);letter-spacing:0.05em;padding-left:13px;}
+
+  /* ---- Componentenchart ---- */
+  .comp{margin-bottom:12px;}
+  .comp-wrap{position:relative;padding:4px 10px 0;}
+  #compSvg{width:100%;height:168px;display:block;}
+  .tip{
+    position:absolute;top:8px;left:0;display:none;pointer-events:none;z-index:5;
+    background:rgba(12,15,20,0.92);border:1px solid var(--line);border-radius:12px;
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    padding:8px 11px;font-family:var(--data);font-size:0.64rem;line-height:1.6;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);white-space:nowrap;
+  }
+  .tip b{font-weight:600;color:var(--ink);}
+  .tip .trow{display:flex;align-items:center;gap:6px;}
+  .tip .sw{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
+  .leg{
+    display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 16px 13px;
+    font-family:var(--data);font-size:0.62rem;color:var(--muted);
+  }
+  .leg .li{display:flex;align-items:center;gap:5px;}
+  .leg .sw{width:8px;height:8px;border-radius:2px;}
+
+  .month.dim{opacity:0.35;filter:saturate(0.5);}
+  .month{transition:opacity .25s ease,filter .25s ease;}
+
   /* ---- Desktop ---- */
   @media(hover:hover){
     .month-head:hover,.section-head:hover{background:rgba(255,255,255,0.035);}
@@ -356,6 +427,33 @@
 <div class="layout">
 <div class="col-left">
 
+<div class="ptabs" id="ptabs">
+  <button class="ptab" data-p="1">Fase 1 <span>'26</span></button>
+  <button class="ptab" data-p="2">Fase 2 <span>'27</span></button>
+  <button class="ptab" data-p="3">Fase 3 <span>'28</span></button>
+</div>
+
+<div class="section pgoals" id="pgoals">
+  <div style="padding:14px 16px 4px;"><span class="eyebrow">Fasedoelen · actieve fase vs einddoel</span></div>
+  <div id="pgoalsBody"></div>
+</div>
+
+<div class="section verses">
+  <div style="padding:14px 16px 2px;"><span class="eyebrow">Fundament</span></div>
+  <div class="verse">
+    <p>"De plannen van wie vlijtig is, leiden tot overvloed — haastwerk leidt tot gebrek."</p>
+    <span class="ref">Spreuken 21:5 · planning &amp; volharding</span>
+  </div>
+  <div class="verse">
+    <p>"Wie leent, wordt slaaf van de uitlener. Wees niemand iets schuldig dan elkaar lief te hebben."</p>
+    <span class="ref">Spreuken 22:7 · Romeinen 13:8 · schuldvrij</span>
+  </div>
+  <div class="verse">
+    <p>"Vermogen dat beetje bij beetje vergaard wordt, groeit gestaag aan."</p>
+    <span class="ref">Spreuken 13:11 · gestaag bouwen</span>
+  </div>
+</div>
+
 <div class="hero">
   <div class="eyebrow">Netto vermogen</div>
   <div class="hero-net num neg" id="netVal">—</div>
@@ -382,6 +480,15 @@
 </div>
 
 <div class="meters" id="meters"></div>
+
+<div class="section comp" id="compCard">
+  <div style="padding:14px 16px 6px;"><span class="eyebrow">Per onderdeel · plan (stippel) vs realiteit</span></div>
+  <div class="comp-wrap">
+    <svg id="compSvg" viewBox="0 0 320 170" preserveAspectRatio="none"></svg>
+    <div class="tip" id="compTip"></div>
+  </div>
+  <div class="leg" id="compLeg"></div>
+</div>
 
 <div class="section" id="secAssets">
   <div class="section-head" data-toggle="assets">
@@ -426,35 +533,37 @@
 
   // Actieplan aug 2026 – dec 2028. Per rij: [jaar, maand(0-based), auto+leefgeld,
   // buy way, noodbuffer 1, buffer 2 (bruiloft), beleggingen, projectie netto binnen plan, milestone]
+  // Per rij: [jaar, maand0, auto+leefgeld, buy way, noodbuffer1-inleg, buffer2-inleg,
+  // beleggingen-inleg, projectie netto, milestone, STANDEN: buyway-rest, noodbuffer, buffer2, beleggingen]
   const ROWS=[
-    [2026,8, 1242.77, 250,    519.68,  0,       0,       1354.91, null],
-    [2026,9, 1242.77, 250,    519.68,  0,       0,       2124.59, null],
-    [2026,10,1242.77, 638.77, 1930.91, 0,       0,       4694.27, "Buy Way volledig afgelost"],
-    [2026,11,1442.77, 0,      1336.73, 266.50,  266.45,  6563.95, "Noodbuffer 1 op €5.000"],
-    [2027,0, 1242.77, 0,      0,       384.84,  384.84,  7333.63, null],
-    [2027,1, 1342.77, 0,      0,       334.84,  334.84,  8003.31, null],
-    [2027,2, 1242.77, 0,      0,       384.84,  384.84,  8772.99, null],
-    [2027,3, 1242.77, 0,      0,       384.84,  384.84,  9542.67, null],
-    [2027,4, 1242.77, 0,      0,       1534.84, 1534.84, 12612.35,"Vakantiegeld-boost"],
-    [2027,5, 1242.77, 0,      0,       384.84,  384.84,  13382.03,null],
-    [2027,6, 1242.77, 0,      0,       384.84,  384.84,  14151.71,null],
-    [2027,7, 1242.77, 0,      0,       384.84,  384.84,  14921.39,null],
-    [2027,8, 1242.77, 0,      0,       384.84,  384.84,  15691.07,null],
-    [2027,9, 1242.77, 0,      0,       384.84,  384.84,  16460.75,null],
-    [2027,10,1242.77, 0,      0,       1284.84, 1284.85, 19030.44,"13e maand → buffer + beurs"],
-    [2027,11,1442.77, 0,      0,       1000.26, 1069.42, 21100.12,"Buffer 2 (bruiloft) op €7.500"],
-    [2028,0, 1242.77, 0,      0,       0,       769.68,  21869.80,null],
-    [2028,1, 1242.77, 0,      0,       0,       769.68,  22639.48,null],
-    [2028,2, 1242.77, 0,      0,       0,       769.68,  23409.16,null],
-    [2028,3, 1242.77, 0,      0,       0,       769.68,  24178.84,null],
-    [2028,4, 1242.77, 0,      0,       0,       3069.68, 27248.52,"Vakantiegeld → beurs"],
-    [2028,5, 1242.77, 0,      0,       0,       769.68,  28018.20,null],
-    [2028,6, 1242.77, 0,      0,       0,       769.68,  28787.88,null],
-    [2028,7, 1242.77, 0,      0,       0,       769.68,  29557.56,null],
-    [2028,8, 1242.77, 0,      0,       0,       769.68,  30327.24,null],
-    [2028,9, 1242.77, 0,      0,       0,       769.68,  31096.92,null],
-    [2028,10,1242.77, 0,      0,       0,       2569.68, 33666.60,null],
-    [2028,11,1442.77, 0,      0,       0,       1869.68, 35536.28,"Eind: €23k belegd · €35,5k netto"]
+    [2026,8, 1242.77, 250,    519.68,  0,       0,       1354.91, null,                             888.77, 1212.68, 0,       1031.00],
+    [2026,9, 1242.77, 250,    519.68,  0,       0,       2124.59, null,                             638.77, 1732.36, 0,       1031.00],
+    [2026,10,1242.77, 638.77, 1930.91, 0,       0,       4694.27, "Buy Way volledig afgelost",      0,      3663.27, 0,       1031.00],
+    [2026,11,1442.77, 0,      1336.73, 266.50,  266.45,  6563.95, "Noodbuffer 1 op €5.000",         0,      5000.00, 266.50,  1297.45],
+    [2027,0, 1242.77, 0,      0,       384.84,  384.84,  7333.63, null,                             0,      5000.00, 651.34,  1682.29],
+    [2027,1, 1342.77, 0,      0,       334.84,  334.84,  8003.31, null,                             0,      5000.00, 986.18,  2017.13],
+    [2027,2, 1242.77, 0,      0,       384.84,  384.84,  8772.99, null,                             0,      5000.00, 1371.02, 2401.97],
+    [2027,3, 1242.77, 0,      0,       384.84,  384.84,  9542.67, null,                             0,      5000.00, 1755.86, 2786.81],
+    [2027,4, 1242.77, 0,      0,       1534.84, 1534.84, 12612.35,"Vakantiegeld-boost",             0,      5000.00, 3290.70, 4321.65],
+    [2027,5, 1242.77, 0,      0,       384.84,  384.84,  13382.03,null,                             0,      5000.00, 3675.54, 4706.49],
+    [2027,6, 1242.77, 0,      0,       384.84,  384.84,  14151.71,null,                             0,      5000.00, 4060.38, 5091.33],
+    [2027,7, 1242.77, 0,      0,       384.84,  384.84,  14921.39,null,                             0,      5000.00, 4445.22, 5476.17],
+    [2027,8, 1242.77, 0,      0,       384.84,  384.84,  15691.07,null,                             0,      5000.00, 4830.06, 5861.01],
+    [2027,9, 1242.77, 0,      0,       384.84,  384.84,  16460.75,null,                             0,      5000.00, 5214.90, 6245.85],
+    [2027,10,1242.77, 0,      0,       1284.84, 1284.85, 19030.44,"13e maand → buffer + beurs",     0,      5000.00, 6499.74, 7530.70],
+    [2027,11,1442.77, 0,      0,       1000.26, 1069.42, 21100.12,"Buffer 2 (bruiloft) op €7.500",  0,      5000.00, 7500.00, 8600.12],
+    [2028,0, 1242.77, 0,      0,       0,       769.68,  21869.80,null,                             0,      5000.00, 7500.00, 9369.80],
+    [2028,1, 1242.77, 0,      0,       0,       769.68,  22639.48,null,                             0,      5000.00, 7500.00, 10139.48],
+    [2028,2, 1242.77, 0,      0,       0,       769.68,  23409.16,null,                             0,      5000.00, 7500.00, 10909.16],
+    [2028,3, 1242.77, 0,      0,       0,       769.68,  24178.84,null,                             0,      5000.00, 7500.00, 11678.84],
+    [2028,4, 1242.77, 0,      0,       0,       3069.68, 27248.52,"Vakantiegeld → beurs",           0,      5000.00, 7500.00, 14748.52],
+    [2028,5, 1242.77, 0,      0,       0,       769.68,  28018.20,null,                             0,      5000.00, 7500.00, 15518.20],
+    [2028,6, 1242.77, 0,      0,       0,       769.68,  28787.88,null,                             0,      5000.00, 7500.00, 16287.88],
+    [2028,7, 1242.77, 0,      0,       0,       769.68,  29557.56,null,                             0,      5000.00, 7500.00, 17057.56],
+    [2028,8, 1242.77, 0,      0,       0,       769.68,  30327.24,null,                             0,      5000.00, 7500.00, 17827.24],
+    [2028,9, 1242.77, 0,      0,       0,       769.68,  31096.92,null,                             0,      5000.00, 7500.00, 18596.92],
+    [2028,10,1242.77, 0,      0,       0,       2569.68, 33666.60,null,                             0,      5000.00, 7500.00, 21166.60],
+    [2028,11,1442.77, 0,      0,       0,       1869.68, 35536.28,"Eind: €23k belegd · €35,5k netto",0,     5000.00, 7500.00, 23036.28]
   ];
   const PROJ_START={y:2026,m:7,net:585.23}; // aug 2026, startpunt van het plan
 
@@ -572,7 +681,9 @@
     const stamp=String(d.getDate()).padStart(2,"0")+"/"+String(d.getMonth()+1).padStart(2,"0");
     const iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
     const h=state.history;
-    const entry={date:stamp,iso:iso,net:Math.round(t.net*100)/100,plan:Math.round(t.planNet*100)/100};
+    const r2=function(v){return Math.round(v*100)/100;};
+    const entry={date:stamp,iso:iso,net:r2(t.net),plan:r2(t.planNet),
+                 bw:r2(t.buyway),st:r2(t.stell),nb:r2(t.spaar),b2:r2(t.buffer2),bl:r2(t.beleg)};
     if(!h.length||h[h.length-1].iso!==iso)h.push(entry);
     else h[h.length-1]=entry;
     if(h.length>80)h.splice(0,h.length-80);
@@ -600,8 +711,9 @@
     const cash=state.assets.filter(function(x){return x.kind==="cash";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
     const buffer2=state.assets.filter(function(x){return x.kind==="buffer2";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
     const buyway=state.debts.filter(function(x){return x.id==="buyway";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
+    const stell=state.debts.filter(function(x){return x.id==="stellantis";}).reduce(function(s,x){return s+Number(x.amt||0);},0);
     const planNet=spaar+buffer2+beleg-buyway;
-    return {assets:a,debts:d,net:a-d,spaar:spaar,beleg:beleg,cash:cash,buffer2:buffer2,planNet:planNet};
+    return {assets:a,debts:d,net:a-d,spaar:spaar,beleg:beleg,cash:cash,buffer2:buffer2,buyway:buyway,stell:stell,planNet:planNet};
   }
 
   /* ---------------- Render: hero ---------------- */
@@ -633,46 +745,50 @@
     return (y-2026)*12+(m-1)-7; // 0 = aug 2026
   }
 
+  function nowFracIdx(maxIdx){
+    const d=new Date();
+    const k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+    return Math.max(0,Math.min(maxIdx,monthIdx(k)+(d.getDate()-1)/30));
+  }
+
   function renderSpark(){
     const W=300,H=112,pad=8,padB=6;
     const maxIdx=monthIdx(PROJECTION[PROJECTION.length-1].key);
-    const actual=(state.history||[]).filter(function(e){return e.iso&&typeof e.plan==="number";});
     const t=totals();
+    // realiteitslijn: startpunt van het plan → gelogde punten → live vandaag
+    const hist=(state.history||[]).filter(function(e){return e.iso&&typeof e.plan==="number";})
+      .map(function(e){return {x:monthIdx(e.iso.slice(0,7))+((+e.iso.slice(8,10)||15)-1)/30,v:e.plan};});
+    let actual=[{x:0,v:PROJ_START.net}].concat(hist,[{x:nowFracIdx(maxIdx),v:t.planNet}])
+      .sort(function(a,b){return a.x-b.x;});
+    actual=actual.filter(function(pnt,i,arr){return i===arr.length-1||Math.abs(arr[i+1].x-pnt.x)>0.02;});
 
-    let vals=PROJECTION.map(function(p){return p.net;}).concat(actual.map(function(e){return e.plan;}),[0,t.planNet]);
+    const vals=PROJECTION.map(function(p){return p.net;}).concat(actual.map(function(a){return a.v;}),[0]);
     const min=Math.min.apply(null,vals), max=Math.max.apply(null,vals);
     const span=(max-min)||1;
     const X=function(idx){return pad+(idx/maxIdx)*(W-pad*2);};
     const Y=function(v){return H-padB-((v-min)/span)*(H-pad-padB);};
 
     let svg="";
-    // zero line
     if(0>=min&&0<=max)svg+='<line x1="0" y1="'+Y(0).toFixed(1)+'" x2="'+W+'" y2="'+Y(0).toFixed(1)+'" stroke="#2B313D" stroke-width="1" stroke-dasharray="3 3"/>';
-    // plan projection: dashed, muted
+    // planpad: stippellijn als benchmark
     const pts=PROJECTION.map(function(p){return X(monthIdx(p.key)).toFixed(1)+","+Y(p.net).toFixed(1);});
-    svg+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="rgba(255,255,255,0.30)" stroke-width="1.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>';
-    // milestone dots on the plan line
+    svg+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="rgba(255,255,255,0.26)" stroke-width="1.4" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>';
     ["2026-11","2026-12","2027-12","2028-12"].forEach(function(k){
       const pr=PROJECTION.find(function(p){return p.key===k;});
       if(pr)svg+='<circle cx="'+X(monthIdx(k)).toFixed(1)+'" cy="'+Y(pr.net).toFixed(1)+'" r="3" fill="none" stroke="#F0BC64" stroke-width="1.4"/>';
     });
-    // actual line: realised "netto binnen plan"
-    if(actual.length){
-      const last=actual[actual.length-1].plan;
-      const col=last<0?"#FF7A6E":"#3DE6A8";
-      document.getElementById("sparkSvg").style.filter="drop-shadow(0 0 6px "+(last<0?"rgba(255,122,110,0.4)":"rgba(61,230,168,0.4)")+")";
-      const apts=actual.map(function(e){
-        const d=parseInt(e.iso.slice(8,10)||"15",10);
-        return X(monthIdx(e.iso.slice(0,7))+(d-1)/30).toFixed(1)+","+Y(e.plan).toFixed(1);
-      });
-      if(apts.length>1)svg+='<polyline points="'+apts.join(" ")+'" fill="none" stroke="'+col+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
-      const lp=apts[apts.length-1].split(",");
-      svg+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="3" fill="'+col+'"/>';
-    }
+    // realiteit: doorgetrokken lijn met glow
+    const last=actual[actual.length-1].v;
+    const col=last<0?"#FF7A6E":"#3DE6A8";
+    document.getElementById("sparkSvg").style.filter="drop-shadow(0 0 6px "+(last<0?"rgba(255,122,110,0.4)":"rgba(61,230,168,0.4)")+")";
+    const apts=actual.map(function(a){return X(a.x).toFixed(1)+","+Y(a.v).toFixed(1);});
+    svg+='<polyline points="'+apts.join(" ")+'" fill="none" stroke="'+col+'" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+    const lp=apts[apts.length-1].split(",");
+    svg+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="3.2" fill="'+col+'"/>';
+
     document.getElementById("sparkSvg").innerHTML=svg;
     document.getElementById("sparkFrom").textContent="aug \u201926";
     document.getElementById("sparkTo").textContent="dec \u201928 · "+fmtShort(35536.28);
-    // delta vs plan for the current month
     const nowKey=new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0");
     const target=PROJECTION.find(function(p){return p.key===nowKey;});
     if(target){
@@ -845,7 +961,8 @@
         app.appendChild(p);lastPhase=m.phase;
       }
 
-      const card=document.createElement("div");card.className="month";
+      const card=document.createElement("div");
+      card.className="month"+(selPhase&&m.phase.indexOf("Fase "+selPhase)!==0?" dim":"");
 
       const head=document.createElement("div");
       head.className="month-head"+(done?" done":"");
@@ -896,9 +1013,158 @@
     });
   }
 
-  function renderAll(){renderHero();renderMeters();renderBalance();renderTotals();renderMonths();}
+  /* ---------------- Fases ---------------- */
+  let selPhase=(function(){const y=new Date().getFullYear();return y<=2026?1:(y===2027?2:3);})();
+
+  function phaseBars(t){
+    return {
+      1:[
+        {lbl:"Buy Way → €0",cur:2500-t.buyway,goal:2500,txt:fmtShort(t.buyway)+" open"},
+        {lbl:"Noodbuffer 1 → €5.000",cur:t.spaar,goal:5000,txt:fmtShort(t.spaar)}
+      ],
+      2:[
+        {lbl:"Buffer 2 (bruiloft) → €7.500",cur:t.buffer2,goal:7500,txt:fmtShort(t.buffer2)},
+        {lbl:"Beleggingen → €8.600 (eind '27)",cur:t.beleg,goal:8600.12,txt:fmtShort(t.beleg)}
+      ],
+      3:[
+        {lbl:"Beleggingen → €23.036",cur:t.beleg,goal:23036.28,txt:fmtShort(t.beleg)},
+        {lbl:"Netto binnen plan → €35.536",cur:t.planNet,goal:35536.28,txt:fmtShort(t.planNet)}
+      ]
+    };
+  }
+
+  function renderPhases(){
+    const t=totals();
+    const bars=phaseBars(t);
+    const meta=[
+      {n:1,title:"Schuld weg + noodbuffer",when:"sep – dec 2026"},
+      {n:2,title:"Buffer 2 (bruiloft) + beleggen",when:"jan – dec 2027"},
+      {n:3,title:"Alles naar de beurs",when:"jan – dec 2028"}
+    ];
+    const yearNow=new Date().getFullYear();
+    const activeN=yearNow<=2026?1:(yearNow===2027?2:3);
+    let html="";
+    meta.forEach(function(mt){
+      const bs=bars[mt.n];
+      const allDone=bs.every(function(b){return b.cur>=b.goal;});
+      const chip=allDone?'<span class="chip done">✓ behaald</span>'
+                :(mt.n===activeN?'<span class="chip act">actief</span>':'<span class="chip soon">komend</span>');
+      html+='<div class="pgoal'+(mt.n===selPhase?' focus':'')+'" data-p="'+mt.n+'">'
+          +'<div class="pgoal-head"><span class="pgoal-title">Fase '+mt.n+' · '+mt.title+'</span>'+chip+'</div>'
+          +'<div class="pgoal-when">'+mt.when+'</div>'
+          +bs.map(function(b){
+            const pct=Math.min(100,b.cur/b.goal*100);
+            return '<div class="pgoal-bar"><div class="lbl"><span>'+b.lbl+'</span><b>'+b.txt+'</b></div>'
+                 +'<div class="meter-bar"><i class="a" style="width:'+pct.toFixed(1)+'%"></i></div></div>';
+          }).join("")
+          +'</div>';
+    });
+    const endPct=Math.min(100,Math.max(0,t.planNet/35536.28*100));
+    html+='<div class="pgoal-end"><div class="lbl"><span>EINDDOEL · DEC 2028</span><span>'+fmtShort(t.planNet)+' / €35.536</span></div>'
+        +'<div class="meter-bar"><i class="o" style="width:'+endPct.toFixed(1)+'%"></i></div></div>';
+    document.getElementById("pgoalsBody").innerHTML=html;
+    document.querySelectorAll(".ptab").forEach(function(b){
+      b.classList.toggle("on",+b.getAttribute("data-p")===selPhase);
+    });
+  }
+
+  /* ---------------- Componentenchart ---------------- */
+  const METRICS=[
+    {id:"bw",label:"Buy Way",col:"#FF7A6E",start:1138.77,plan:function(i){return i===0?1138.77:ROWS[i-1][9];},live:function(t){return t.buyway;}},
+    {id:"st",label:"Stellantis",col:"#FF9F6E",start:8560.23,plan:function(i){return Math.max(0,8560.23*(1-i/35));},live:function(t){return t.stell;}},
+    {id:"nb",label:"Noodbuffer 1",col:"#3DE6A8",start:693,plan:function(i){return i===0?693:ROWS[i-1][10];},live:function(t){return t.spaar;}},
+    {id:"b2",label:"Buffer 2",col:"#6FA8FF",start:0,plan:function(i){return i===0?0:ROWS[i-1][11];},live:function(t){return t.buffer2;}},
+    {id:"bl",label:"Beleggingen",col:"#F0BC64",start:1031,plan:function(i){return i===0?1031:ROWS[i-1][12];},live:function(t){return t.beleg;}}
+  ];
+  const CW=320,CH=170,CPAD=8,CPB=8;
+  let compMax=0;
+  function compY(v){return CH-CPB-(v/compMax)*(CH-CPAD-CPB);}
+  function compX(idx){return CPAD+(idx/28)*(CW-CPAD*2);}
+
+  function renderComponents(){
+    const t=totals();
+    const hist=(state.history||[]).filter(function(e){return e.iso&&typeof e.bw==="number";});
+    compMax=0;
+    METRICS.forEach(function(m){for(let i=0;i<=28;i++)compMax=Math.max(compMax,m.plan(i));compMax=Math.max(compMax,m.live(t));});
+    compMax*=1.06;
+    let svg='<line x1="0" y1="'+compY(0).toFixed(1)+'" x2="'+CW+'" y2="'+compY(0).toFixed(1)+'" stroke="#2B313D" stroke-width="1"/>';
+    METRICS.forEach(function(m){
+      const pts=[];for(let i=0;i<=28;i++)pts.push(compX(i).toFixed(1)+","+compY(m.plan(i)).toFixed(1));
+      svg+='<polyline points="'+pts.join(" ")+'" fill="none" stroke="'+m.col+'" stroke-opacity="0.42" stroke-width="1.2" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>';
+      // realiteit: gelogde punten + live
+      const nowX=nowFracIdx(28);
+      const apts=[{x:0,v:m.start}].concat(
+        hist.map(function(e){return {x:monthIdx(e.iso.slice(0,7))+((+e.iso.slice(8,10)||15)-1)/30,
+          v:{bw:e.bw,st:e.st,nb:e.nb,b2:e.b2,bl:e.bl}[m.id]};}),
+        [{x:nowX,v:m.live(t)}]
+      ).sort(function(a,b){return a.x-b.x;})
+       .filter(function(pnt,i,arr){return i===arr.length-1||Math.abs(arr[i+1].x-pnt.x)>0.02;});
+      const ap=apts.map(function(a){return compX(a.x).toFixed(1)+","+compY(a.v).toFixed(1);});
+      svg+='<polyline points="'+ap.join(" ")+'" fill="none" stroke="'+m.col+'" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"/>';
+      const lp=ap[ap.length-1].split(",");
+      svg+='<circle cx="'+lp[0]+'" cy="'+lp[1]+'" r="2.6" fill="'+m.col+'"/>';
+    });
+    svg+='<line id="compHair" x1="-10" y1="0" x2="-10" y2="'+CH+'" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>';
+    document.getElementById("compSvg").innerHTML=svg;
+    document.getElementById("compLeg").innerHTML=METRICS.map(function(m){
+      return '<span class="li"><span class="sw" style="background:'+m.col+'"></span>'+m.label+'</span>';
+    }).join("");
+  }
+
+  function compTipShow(clientX){
+    const svgEl=document.getElementById("compSvg");
+    const rect=svgEl.getBoundingClientRect();
+    const frac=Math.max(0,Math.min(1,(clientX-rect.left)/rect.width));
+    const idx=Math.round(frac*28);
+    const t=totals();
+    const key=idx===0?"2026-08":(function(){const mm=(7+idx)%12,yy=2026+Math.floor((7+idx)/12);return yy+"-"+String(mm+1).padStart(2,"0");})();
+    const mm=(7+idx)%12, yy=2026+Math.floor((7+idx)/12);
+    const hist=(state.history||[]).filter(function(e){return e.iso&&typeof e.bw==="number"&&e.iso.slice(0,7)===key;});
+    const act=hist.length?hist[hist.length-1]:null;
+    let html='<b>'+NL[mm].slice(0,3)+" \u2019"+String(yy).slice(2)+'</b>';
+    METRICS.forEach(function(m){
+      const pv=m.plan(idx);
+      let a="";
+      if(act)a=" · <b>"+fmtShort({bw:act.bw,st:act.st,nb:act.nb,b2:act.b2,bl:act.bl}[m.id])+"</b>";
+      html+='<div class="trow"><span class="sw" style="background:'+m.col+'"></span>'+m.label+" "+fmtShort(pv)+a+'</div>';
+    });
+    const tip=document.getElementById("compTip");
+    tip.innerHTML=html;tip.style.display="block";
+    const wrapRect=tip.parentElement.getBoundingClientRect();
+    let lx=clientX-wrapRect.left+12;
+    if(lx+tip.offsetWidth>wrapRect.width-4)lx=clientX-wrapRect.left-tip.offsetWidth-12;
+    tip.style.left=Math.max(4,lx)+"px";
+    const hair=document.getElementById("compHair");
+    if(hair){const sx=CPAD+(idx/28)*(CW-CPAD*2);hair.setAttribute("x1",sx);hair.setAttribute("x2",sx);}
+  }
+  function compTipHide(){
+    document.getElementById("compTip").style.display="none";
+    const hair=document.getElementById("compHair");
+    if(hair){hair.setAttribute("x1",-10);hair.setAttribute("x2",-10);}
+  }
+
+  function renderAll(){renderHero();renderMeters();renderPhases();renderComponents();renderBalance();renderTotals();renderMonths();}
 
   /* ---------------- Events ---------------- */
+  document.querySelectorAll(".ptab").forEach(function(b){
+    b.addEventListener("click",function(){
+      selPhase=+b.getAttribute("data-p");
+      renderPhases();renderMonths();
+      const first=document.querySelector(".month:not(.dim)");
+      if(first&&typeof first.scrollIntoView==="function")first.scrollIntoView({behavior:"smooth",block:"start"});
+    });
+  });
+
+  (function(){
+    const wrap=document.querySelector(".comp-wrap");
+    if(!wrap)return;
+    wrap.addEventListener("mousemove",function(e){compTipShow(e.clientX);});
+    wrap.addEventListener("mouseleave",compTipHide);
+    wrap.addEventListener("touchstart",function(e){compTipShow(e.touches[0].clientX);},{passive:true});
+    wrap.addEventListener("touchmove",function(e){compTipShow(e.touches[0].clientX);},{passive:true});
+    wrap.addEventListener("touchend",function(){setTimeout(compTipHide,1600);});
+  })();
+
   document.querySelectorAll(".section-head").forEach(function(h){
     h.addEventListener("click",function(){
       const k=h.getAttribute("data-toggle");
