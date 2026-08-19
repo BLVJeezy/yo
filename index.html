@@ -638,14 +638,24 @@
   }
 
   async function load(){
-    if(!window.storage||typeof window.storage.get!=="function"){storageBroken=true;return null;}
+    // Laag 1: platform-opslag (Claude-omgeving)
     try{
-      const r=await window.storage.get(KEY,false);
-      if(r&&r.value){
-        const p=JSON.parse(r.value);
+      if(window.storage&&typeof window.storage.get==="function"){
+        const r=await window.storage.get(KEY,false);
+        if(r&&r.value){
+          const p=JSON.parse(r.value);
+          if(p&&typeof p==="object")return p;
+        }
+      }
+    }catch(e){/* niets of niet beschikbaar — probeer laag 2 */}
+    // Laag 2: browser localStorage (GitHub Pages, Safari, geïnstalleerde app)
+    try{
+      const raw=window.localStorage&&window.localStorage.getItem(KEY);
+      if(raw){
+        const p=JSON.parse(raw);
         if(p&&typeof p==="object")return p;
       }
-    }catch(e){/* nothing stored yet — defaults stay */}
+    }catch(e){/* niet beschikbaar in deze context */}
     return null;
   }
 
@@ -667,12 +677,21 @@
   }
 
   async function save(){
+    const payload=JSON.stringify(state);
+    let ok=false;
     try{
-      await window.storage.set(KEY,JSON.stringify(state),false);
-      storageBroken=false;
-    }catch(e){
-      storageBroken=true;
-    }
+      if(window.storage&&typeof window.storage.set==="function"){
+        await window.storage.set(KEY,payload,false);
+        ok=true;
+      }
+    }catch(e){/* platformlaag faalt — localStorage vangt op */}
+    try{
+      if(window.localStorage){
+        window.localStorage.setItem(KEY,payload);
+        ok=true;
+      }
+    }catch(e){/* geen localStorage in deze context */}
+    storageBroken=!ok;
   }
 
   function recordHistory(){
@@ -1177,6 +1196,8 @@
     if(n===selPhase)return;
     const dir=n>selPhase?"r":"l";
     selPhase=n;
+    state.selPhase=n;
+    save();
     renderPhaseContent();
     if(animate!==false){
       const pane=document.getElementById("phasePane");
@@ -1244,6 +1265,8 @@
     }
   }
 
+  window.addEventListener("pagehide",function(){try{save();}catch(e){}});
+
   /* Paint straight away with the defaults — nothing waits on storage.
      Stored progress is merged in afterwards and the screen redraws. */
   hydrate();
@@ -1259,6 +1282,7 @@
     }catch(e){/* keep the defaults already on screen */}
     if(stored){
       state=Object.assign(state,stored);
+      if(stored.selPhase>=1&&stored.selPhase<=3)selPhase=stored.selPhase;
       // the flag must come from the stored data, not from the first paint,
       // otherwise a correction never reaches an older save
       state.seedVersion=stored.seedVersion;
