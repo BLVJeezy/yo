@@ -442,6 +442,176 @@
   .lkey[data-k=""]{visibility:hidden;}
   .lkey.del{font-size:1.2rem;color:var(--muted);}
 
+  /* ---- iOS 27 settings ---- */
+  .gear{
+    position:fixed;top:12px;right:14px;z-index:90;
+    background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);
+    color:var(--muted);font-size:1.2rem;width:40px;height:40px;border-radius:50%;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    box-shadow:0 4px 16px rgba(0,0,0,0.3);
+    transition:transform .2s ease,box-shadow .2s ease;
+  }
+  .gear:active{transform:rotate(60deg) scale(0.92);}
+
+  .settings-overlay{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(0,0,0,0.55);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    display:flex;align-items:flex-end;justify-content:center;
+    opacity:0;visibility:hidden;
+    transition:opacity .28s ease,visibility .28s ease;
+  }
+  .settings-overlay.open{opacity:1;visibility:visible;}
+
+  .settings-sheet{
+    background:rgba(18,22,30,0.88);
+    -webkit-backdrop-filter:blur(40px) saturate(180%);
+    backdrop-filter:blur(40px) saturate(180%);
+    border:1px solid rgba(255,255,255,0.10);
+    border-bottom:none;
+    border-radius:24px 24px 0 0;
+    width:100%;max-width:480px;
+    max-height:85vh;overflow-y:auto;
+    padding:0 0 calc(24px + env(safe-area-inset-bottom));
+    transform:translateY(100%);
+    transition:transform .35s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 -12px 48px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.10);
+    scrollbar-width:none;
+  }
+  .settings-sheet::-webkit-scrollbar{display:none;}
+  .settings-overlay.open .settings-sheet{transform:none;}
+
+  .s-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px 14px;
+    border-bottom:1px solid rgba(255,255,255,0.08);
+    position:sticky;top:0;z-index:1;
+    background:rgba(18,22,30,0.75);
+    -webkit-backdrop-filter:blur(30px);backdrop-filter:blur(30px);
+  }
+  .s-title{font-family:var(--display);font-weight:700;font-size:1.1rem;letter-spacing:-0.01em;}
+  .s-close{
+    background:rgba(255,255,255,0.08);border:none;color:var(--muted);
+    width:32px;height:32px;border-radius:50%;font-size:0.9rem;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .s-section{padding:18px 20px 6px;}
+  .s-label{
+    font-family:var(--data);font-size:0.64rem;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  }
+  .s-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .accent-row{gap:12px;padding-bottom:6px;}
+  .accent-dot{
+    width:36px;height:36px;border-radius:50%;border:3px solid transparent;
+    background:var(--ac);cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;
+    box-shadow:0 2px 10px color-mix(in srgb,var(--ac) 40%,transparent);
+  }
+  .accent-dot.on{
+    border-color:rgba(255,255,255,0.85);
+    box-shadow:0 0 18px color-mix(in srgb,var(--ac) 60%,transparent);
+    transform:scale(1.12);
+  }
+
+  .s-item{
+    display:flex;align-items:center;gap:12px;
+    padding:13px 16px;margin-bottom:8px;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
+    border-radius:14px;cursor:pointer;touch-action:manipulation;
+    transition:background .12s;
+  }
+  .s-item:active{background:rgba(255,255,255,0.08);}
+  .s-item-icon{font-size:1.2rem;width:28px;text-align:center;}
+  .s-item-txt{flex:1;font-size:0.9rem;}
+  .s-arrow{color:var(--muted);font-size:1.3rem;font-weight:300;}
+
+  .s-toggle{
+    width:44px;height:26px;border-radius:13px;
+    background:rgba(255,255,255,0.12);position:relative;cursor:pointer;
+    transition:background .2s;flex-shrink:0;
+  }
+  .s-toggle.on{background:var(--asset);}
+  .s-toggle-knob{
+    width:22px;height:22px;border-radius:50%;background:#fff;
+    position:absolute;top:2px;left:2px;
+    transition:left .2s cubic-bezier(.4,0,.2,1);
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
+  .s-toggle.on .s-toggle-knob{left:20px;}
+
+  .asset-icon-item{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 16px;margin-bottom:6px;
+    background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+    border-radius:14px;
+  }
+  .asset-icon-item .ai-emoji{
+    font-size:1.3rem;width:32px;height:32px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,0.06);border-radius:10px;cursor:pointer;
+    border:1px solid rgba(255,255,255,0.08);
+    transition:background .12s;flex-shrink:0;
+  }
+  .asset-icon-item .ai-emoji:active{background:rgba(255,255,255,0.12);}
+  .asset-icon-item .ai-name{flex:1;font-size:0.88rem;}
+
+  .emoji-picker{
+    display:none;flex-wrap:wrap;gap:6px;padding:8px 0 4px;
+  }
+  .emoji-picker.open{display:flex;}
+  .emoji-pick{
+    font-size:1.3rem;width:38px;height:38px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+    border-radius:10px;cursor:pointer;
+    transition:background .12s,transform .12s;
+  }
+  .emoji-pick:active{background:rgba(255,255,255,0.10);transform:scale(1.1);}
+
+  .s-version{
+    text-align:center;font-family:var(--data);font-size:0.62rem;
+    color:rgba(255,255,255,0.2);padding:18px 0 4px;letter-spacing:0.06em;
+  }
+
+  /* ---- light theme ---- */
+  body.light{
+    --ink:#14181F;--muted:#6C7686;--line:rgba(0,0,0,0.08);
+    --glass:rgba(255,255,255,0.65);--glass-strong:rgba(255,255,255,0.75);
+    --debt:#C0392B;--debt-soft:rgba(192,57,43,0.10);
+    --asset-soft:rgba(16,185,120,0.10);
+    --ochre:#A67B1A;
+    background:#F2F4F8;color:var(--ink);
+  }
+  body.light::before{
+    background:
+      radial-gradient(46% 34% at 18% 6%,  rgba(61,230,168,0.10), transparent 70%),
+      radial-gradient(52% 40% at 88% 22%, rgba(96,140,255,0.08), transparent 72%),
+      #F2F4F8;
+  }
+  body.light .hero,body.light .section,body.light .meter,body.light .month{
+    background:rgba(255,255,255,0.65);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.75),0 4px 20px rgba(0,0,0,0.06);
+    border-color:rgba(0,0,0,0.06);
+  }
+  body.light .lockscreen{background:#F2F4F8;}
+  body.light .lkey{background:rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.08);color:var(--ink);}
+  body.light .amt-in{background:rgba(0,0,0,0.03);color:var(--ink);border-color:rgba(0,0,0,0.10);box-shadow:inset 0 1px 2px rgba(0,0,0,0.06);}
+  body.light .add-row input{background:rgba(0,0,0,0.03);color:var(--ink);border-color:rgba(0,0,0,0.10);}
+  body.light .settings-sheet{background:rgba(245,247,250,0.92);border-color:rgba(0,0,0,0.06);}
+  body.light .s-item{background:rgba(0,0,0,0.03);border-color:rgba(0,0,0,0.06);}
+  body.light .gear{background:rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.08);color:#6C7686;}
+  body.light .ptab{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08);color:var(--muted);}
+  body.light .rpill{background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08);}
+  body.light .cbx{border-color:rgba(0,0,0,0.18);background:rgba(0,0,0,0.03);}
+  body.light .pill{background:rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.08);}
+  body.light .dot{border-color:rgba(0,0,0,0.18);}
+  body.light .track{background:rgba(0,0,0,0.06);box-shadow:inset 0 1px 2px rgba(0,0,0,0.08);}
+  body.light .meter-bar{background:rgba(0,0,0,0.06);}
+  body.light .month-progress{background:rgba(0,0,0,0.06);}
+  body.light .verse p{color:#2C3344;border-left-color:rgba(16,185,120,0.4);}
+
   .range-pills{display:flex;gap:5px;margin:9px 0 2px;flex-wrap:wrap;}
   .rpill{
     background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--muted);
@@ -521,6 +691,59 @@
       <button class="lkey del" data-k="del">⌫</button>
     </div>
   </div>
+</div>
+
+<button class="gear" id="gearBtn" aria-label="Instellingen">⚙</button>
+
+<div class="settings-overlay" id="settingsOverlay">
+<div class="settings-sheet" id="settingsSheet">
+  <div class="s-header">
+    <span class="s-title">Instellingen</span>
+    <button class="s-close" id="settingsClose">✕</button>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Accentkleur</div>
+    <div class="s-row accent-row" id="accentRow">
+      <button class="accent-dot" data-accent="green" style="--ac:#3DE6A8"></button>
+      <button class="accent-dot" data-accent="blue" style="--ac:#6FA8FF"></button>
+      <button class="accent-dot" data-accent="purple" style="--ac:#B07AFF"></button>
+      <button class="accent-dot" data-accent="orange" style="--ac:#FFAA5C"></button>
+      <button class="accent-dot" data-accent="pink" style="--ac:#FF6FA8"></button>
+      <button class="accent-dot" data-accent="cyan" style="--ac:#5CE5E5"></button>
+    </div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Bezittingen · icoon aanpassen</div>
+    <div id="assetIconList"></div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Beveiliging</div>
+    <div class="s-item" id="pinResetBtn">
+      <span class="s-item-icon">🔑</span>
+      <span class="s-item-txt">PIN wijzigen</span>
+      <span class="s-arrow">›</span>
+    </div>
+    <div class="s-item" id="pinRemoveBtn">
+      <span class="s-item-icon">🔓</span>
+      <span class="s-item-txt">PIN verwijderen</span>
+      <span class="s-arrow">›</span>
+    </div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Weergave</div>
+    <div class="s-item" id="modeToggle">
+      <span class="s-item-icon" id="modeIcon">🌙</span>
+      <span class="s-item-txt" id="modeTxt">Donker thema</span>
+      <div class="s-toggle on" id="modeSwitch"><div class="s-toggle-knob"></div></div>
+    </div>
+  </div>
+
+  <div class="s-version">Vermogen v2.0 · BLVJeezy</div>
+</div>
 </div>
 
 <div class="eyebrow" style="margin-bottom:2px;">Balans · <span id="todayLbl"></span></div>
@@ -639,6 +862,117 @@
 <script>
 (function(){
   "use strict";
+
+  /* ---------------- Settings ---------------- */
+  const ACCENTS={
+    green:{asset:"#3DE6A8",soft:"rgba(61,230,168,0.12)"},
+    blue:{asset:"#6FA8FF",soft:"rgba(111,168,255,0.12)"},
+    purple:{asset:"#B07AFF",soft:"rgba(176,122,255,0.12)"},
+    orange:{asset:"#FFAA5C",soft:"rgba(255,170,92,0.12)"},
+    pink:{asset:"#FF6FA8",soft:"rgba(255,111,168,0.12)"},
+    cyan:{asset:"#5CE5E5",soft:"rgba(92,229,229,0.12)"}
+  };
+  const ASSET_EMOJIS=["💰","🏦","💳","📊","🚗","📱","💻","🏠","📋","💎","🪙","📈","🎯","🔑","💵","🏆"];
+
+  function loadSettings(){
+    try{
+      const raw=window.localStorage&&window.localStorage.getItem("finplan-settings");
+      return raw?JSON.parse(raw):{};
+    }catch(e){return {};}
+  }
+  function saveSettings(s){
+    try{if(window.localStorage)window.localStorage.setItem("finplan-settings",JSON.stringify(s));}catch(e){}
+  }
+  const SETTINGS=loadSettings();
+  if(!SETTINGS.accent)SETTINGS.accent="green";
+  if(!SETTINGS.mode)SETTINGS.mode="dark";
+  if(!SETTINGS.icons)SETTINGS.icons={};
+
+  function applyAccent(){
+    const a=ACCENTS[SETTINGS.accent]||ACCENTS.green;
+    document.documentElement.style.setProperty("--asset",a.asset);
+    document.documentElement.style.setProperty("--asset-soft",a.soft);
+    document.querySelectorAll(".accent-dot").forEach(function(d){
+      d.classList.toggle("on",d.getAttribute("data-accent")===SETTINGS.accent);
+    });
+  }
+  function applyMode(){
+    document.body.classList.toggle("light",SETTINGS.mode==="light");
+    const sw=document.getElementById("modeSwitch");
+    const ic=document.getElementById("modeIcon");
+    const tx=document.getElementById("modeTxt");
+    if(sw){sw.classList.toggle("on",SETTINGS.mode==="dark");}
+    if(ic)ic.textContent=SETTINGS.mode==="dark"?"🌙":"☀️";
+    if(tx)tx.textContent=SETTINGS.mode==="dark"?"Donker thema":"Licht thema";
+  }
+  function applyIcons(){
+    // asset icons are rendered in renderBalance, so this is called there
+  }
+
+  function openSettings(){
+    document.getElementById("settingsOverlay").classList.add("open");
+    renderAssetIcons();
+  }
+  function closeSettings(){
+    document.getElementById("settingsOverlay").classList.remove("open");
+  }
+  function renderAssetIcons(){
+    const list=document.getElementById("assetIconList");
+    if(!list)return;
+    list.innerHTML="";
+    state.assets.forEach(function(a){
+      const icon=SETTINGS.icons[a.id]||"💰";
+      const item=document.createElement("div");item.className="asset-icon-item";
+      const em=document.createElement("div");em.className="ai-emoji";em.textContent=icon;
+      const nm=document.createElement("span");nm.className="ai-name";nm.textContent=a.label;
+      const picker=document.createElement("div");picker.className="emoji-picker";
+      ASSET_EMOJIS.forEach(function(e){
+        const btn=document.createElement("button");btn.className="emoji-pick";btn.textContent=e;
+        btn.addEventListener("click",function(){
+          SETTINGS.icons[a.id]=e;saveSettings(SETTINGS);
+          em.textContent=e;picker.classList.remove("open");
+          renderBalance();
+        });
+        picker.appendChild(btn);
+      });
+      em.addEventListener("click",function(){
+        picker.classList.toggle("open");
+      });
+      item.appendChild(em);item.appendChild(nm);
+      list.appendChild(item);list.appendChild(picker);
+    });
+  }
+
+  document.getElementById("gearBtn").addEventListener("click",openSettings);
+  document.getElementById("settingsClose").addEventListener("click",closeSettings);
+  document.getElementById("settingsOverlay").addEventListener("click",function(e){
+    if(e.target===this)closeSettings();
+  });
+  document.querySelectorAll(".accent-dot").forEach(function(d){
+    d.addEventListener("click",function(){
+      SETTINGS.accent=d.getAttribute("data-accent");
+      saveSettings(SETTINGS);applyAccent();
+    });
+  });
+  document.getElementById("modeToggle").addEventListener("click",function(){
+    SETTINGS.mode=SETTINGS.mode==="dark"?"light":"dark";
+    saveSettings(SETTINGS);applyMode();
+  });
+  document.getElementById("pinResetBtn").addEventListener("click",function(){
+    try{window.localStorage.removeItem(PIN_KEY);}catch(e){}
+    closeSettings();
+    var ls=document.getElementById("lockscreen");
+    if(ls){ls.style.display="";ls.classList.remove("gone");}
+    location.reload();
+  });
+  document.getElementById("pinRemoveBtn").addEventListener("click",function(){
+    if(!confirm("PIN verwijderen? De app is dan niet meer vergrendeld."))return;
+    try{window.localStorage.removeItem(PIN_KEY);}catch(e){}
+    closeSettings();
+  });
+
+  applyAccent();
+  applyMode();
 
   /* ---------------- PIN Lock ---------------- */
   const PIN_KEY="finplan-pin";
@@ -1109,7 +1443,8 @@
     state.assets.forEach(function(a){
       const row=document.createElement("div");row.className="line-row";
       const lab=document.createElement("div");lab.className="line-label";
-      lab.innerHTML='<span class="grp">'+a.group+'</span><span class="nm">'+a.label+'</span>';
+      const ic=SETTINGS.icons&&SETTINGS.icons[a.id]?SETTINGS.icons[a.id]:"";
+      lab.innerHTML='<span class="grp">'+a.group+'</span><span class="nm">'+(ic?ic+" ":"")+a.label+'</span>';
       const eu=document.createElement("span");eu.className="euro";eu.textContent="€";
       const inp=numInput(a.amt,function(v){a.amt=v;save();renderHero();renderMeters();});
       row.appendChild(lab);row.appendChild(eu);row.appendChild(inp);
