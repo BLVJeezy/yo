@@ -665,6 +665,55 @@
   }
   @media(prefers-reduced-motion:reduce){*{transition:none!important;}}
 </style>
+<script type="module">
+  import {initializeApp} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+  import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+  import {getDatabase,ref,get,set,onValue} from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+
+  const firebaseConfig={
+    apiKey:"AIzaSyA0BQhCA-5SzYKrbcDosGL4LIh_JKYbIGc",
+    authDomain:"finance-bd88d.firebaseapp.com",
+    databaseURL:"https://finance-bd88d-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId:"finance-bd88d",
+    storageBucket:"finance-bd88d.firebasestorage.app",
+    messagingSenderId:"346268817826",
+    appId:"1:346268817826:web:1fe0f4ff2f98df4408fafb"
+  };
+
+  const app=initializeApp(firebaseConfig);
+  const auth=getAuth(app);
+  const db=getDatabase(app);
+
+  const ready=new Promise(function(resolve){
+    signInAnonymously(auth).then(function(){resolve(true);}).catch(function(e){
+      console.error("Firebase anonieme login mislukt",e);resolve(false);
+    });
+  });
+
+  window.__fb={
+    ready:ready,
+    async pull(key){
+      const ok=await ready;if(!ok)return null;
+      try{
+        const snap=await get(ref(db,"users/"+key+"/state"));
+        return snap.exists()?snap.val():null;
+      }catch(e){console.error("Firebase pull mislukt",e);return null;}
+    },
+    async push(key,data){
+      const ok=await ready;if(!ok)return false;
+      try{await set(ref(db,"users/"+key+"/state"),data);return true;}
+      catch(e){console.error("Firebase push mislukt",e);return false;}
+    },
+    watch(key,cb){
+      ready.then(function(ok){
+        if(!ok)return;
+        onValue(ref(db,"users/"+key+"/state"),function(snap){
+          if(snap.exists())cb(snap.val());
+        });
+      });
+    }
+  };
+</script>
 </head>
 <body>
 
@@ -739,6 +788,14 @@
       <span class="s-item-icon" id="modeIcon">🌙</span>
       <span class="s-item-txt" id="modeTxt">Donker thema</span>
       <div class="s-toggle on" id="modeSwitch"><div class="s-toggle-knob"></div></div>
+    </div>
+  </div>
+
+  <div class="s-section">
+    <div class="s-label">Cloud-sync</div>
+    <div class="s-item" style="cursor:default;">
+      <span class="s-item-icon">☁️</span>
+      <span class="s-item-txt" id="syncStatus">Cloud-sync nog niet actief</span>
     </div>
   </div>
 
@@ -1009,6 +1066,7 @@
     function unlock(){
       lock.classList.add("gone");
       setTimeout(function(){lock.style.display="none";},400);
+      initCloudSync();
     }
 
     function onDigit(k){
@@ -1190,6 +1248,7 @@
     if(!Array.isArray(state.history))state.history=[];
     if(!state.months||typeof state.months!=="object")state.months={};
     if(!state.chartRange)state.chartRange="all";
+    if(!state.updatedAt)state.updatedAt=0;
     if(!state.compVis)state.compVis={bw:true,st:true,nb:true,b2:true,bl:true};
 
     // Nieuw actieplan toegepast — vervangt balans en maandstructuur eenmalig, ook over oudere saves
@@ -1201,7 +1260,10 @@
     }
   }
 
-  async function save(){
+  let syncKey=null, applyingRemote=false;
+
+  async function save(skipStamp){
+    if(!applyingRemote&&!skipStamp)state.updatedAt=Date.now();
     const payload=JSON.stringify(state);
     let ok=false;
     try{
@@ -1217,6 +1279,52 @@
       }
     }catch(e){/* geen localStorage in deze context */}
     storageBroken=!ok;
+    if(syncKey&&!applyingRemote&&window.__fb){
+      window.__fb.push(syncKey,state).then(function(pushed){
+        setSyncBadge(pushed?"synced":"offline");
+      });
+    }
+  }
+
+  function setSyncBadge(mode){
+    const b=document.getElementById("syncStatus");
+    if(!b)return;
+    if(mode==="synced"){b.textContent="☁️ Verbonden — sync actief";b.style.color="var(--asset)";}
+    else if(mode==="syncing"){b.textContent="☁️ Synchroniseren…";b.style.color="var(--muted)";}
+    else if(mode==="offline"){b.textContent="☁️ Niet verbonden (lokaal opgeslagen)";b.style.color="var(--ochre)";}
+    else{b.textContent="☁️ Cloud-sync nog niet actief";b.style.color="var(--muted)";}
+  }
+
+  async function initCloudSync(){
+    syncKey=getPin();
+    if(!syncKey||!window.__fb)return;
+    setSyncBadge("syncing");
+    const remote=await window.__fb.pull(syncKey);
+    if(remote&&typeof remote==="object"){
+      if((remote.updatedAt||0)>(state.updatedAt||0)){
+        applyingRemote=true;
+        state=Object.assign(state,remote);
+        hydrate();
+        safeRender();
+        applyingRemote=false;
+      }else if((state.updatedAt||0)>(remote.updatedAt||0)){
+        window.__fb.push(syncKey,state);
+      }
+    }else{
+      window.__fb.push(syncKey,state);
+    }
+    setSyncBadge("synced");
+    window.__fb.watch(syncKey,function(remoteData){
+      if(!remoteData||typeof remoteData!=="object")return;
+      if((remoteData.updatedAt||0)>(state.updatedAt||0)){
+        applyingRemote=true;
+        state=Object.assign(state,remoteData);
+        hydrate();
+        safeRender();
+        applyingRemote=false;
+        setSyncBadge("synced");
+      }
+    });
   }
 
   function recordHistory(){
@@ -1231,7 +1339,7 @@
     if(!h.length||h[h.length-1].iso!==iso)h.push(entry);
     else h[h.length-1]=entry;
     if(h.length>80)h.splice(0,h.length-80);
-    save();
+    save(true); // automatische dagregistratie mag geen echte edits overschrijven bij sync
   }
 
   function monthState(m){
